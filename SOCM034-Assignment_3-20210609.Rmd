@@ -2,9 +2,8 @@
 title: "SOCM034- Assignment_3-20210609"
 author: "Philipp Holz"
 date: "6/7/2021"
-output:
-  html_document:
-    df_print: paged
+output: html_document
+bibliography: SOCM034_references.bib
 ---
 
 ```{r setup, echo = FALSE, message=FALSE, warning=FALSE}
@@ -30,6 +29,8 @@ setwd("~/Documents/GitHub/Covid19-PolicyEffectiveness")
 Like no other event in recent history, the COVID-19 pandemic has drawn attention to policy makers and the effectiveness of their work. Scientific insight and epidemiological experts were at the forefront of the debate and newspapers found themselves citing regularly from pre-published papers in search for answers to the correct way to tackle this pandemic. For social science researchers interested in the policy process and impact analysis, this of course presented a unique opportunity to compare policy making across countries and governments, and, because the COVID-19 pandemic led to the creation and assembly of data like no other societal challenge before it, statistical methods are more than ever suitable in doing so.
 
 In the following, I will 
+
+[@yoberoTimeSeriesRegression2017]
 
 # Literature Review
 - What is $R_{eff}$?
@@ -782,7 +783,7 @@ Although not a very robust measure, because the differences in model fit were qu
 
 Let us look now at the model residuals.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=6}
+```{r message=FALSE, warning=FALSE, fig.height=10, fig.width=6, appendix == TRUE}
 # How has the Stringency-Reproduction Rate developed?
 France_res.ts <- ts(resid(ARDL101100France.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Germany_res.ts <- ts(resid(ARDL101100Germany.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
@@ -812,4 +813,7 @@ As we can see, the rolling variance of the error term decreases over time for al
 
 # Conclusion
 - further research could be a more qualitative comparative case study, that connects these findings to a more in-depth view of the succession of events in each country
+
+# Bibliography
+
 
