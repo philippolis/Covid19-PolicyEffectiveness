@@ -27,7 +27,7 @@ setwd("~/Documents/GitHub/Covid19-PolicyEffectiveness")
 ```
 
 # Introduction
-Like no other event in recent history, the Covid-19 pandemic has drawn attention to policy makers and the effectiveness of their work. Scientific insight and epidemiological experts were at the forefront of the debate and newspapers found themselves citing regularly from pre-published papers in search for answers to the correct way to tackle this pandemic. For social science researchers interested in the policy process and impact analysis, this of course presented a unique opportunity to compare policy making across countries and governments, and, because the Covid-19 pandemic led to the creation and assembly of data like no other societal challenge before it, statistical methods are more than ever suitable in doing so.
+Like no other event in recent history, the COVID-19 pandemic has drawn attention to policy makers and the effectiveness of their work. Scientific insight and epidemiological experts were at the forefront of the debate and newspapers found themselves citing regularly from pre-published papers in search for answers to the correct way to tackle this pandemic. For social science researchers interested in the policy process and impact analysis, this of course presented a unique opportunity to compare policy making across countries and governments, and, because the COVID-19 pandemic led to the creation and assembly of data like no other societal challenge before it, statistical methods are more than ever suitable in doing so.
 
 In the following, I will 
 
@@ -36,15 +36,28 @@ In the following, I will
 - What is the Policy Stringency Index?
 - What measures did the countries take?
 - How were the policy approaches of the different countries compared?
+  - this might be too much for this analysis
+  
+- findings of li and liu seem to be different
+
+- while other papers have research effectiveness of different measures, and now that these effective measures are mostly known, we can go into the retrospective and check, which polities have produced the most effective policies
+
+
 
 # Method
 We are interested in understanding, how changes in the Stringency Index affect the changes in the Reproduction Rate, thus we will be using different lags of the Stringency Index, where regressing the Stringency Index at lag 1 on the Reproduction Rate would be showing, how changes in the Stringency Index affect changes in the Reproduction Rate one week after the changes in the Stringency Index. As symptoms show roughly 5 days after the infection and thus infections are usually discovered at the earliest 5 days after the infection happened, such a lag seems plausible. As making a test, evaluating the test and reporting the test results can take more time, more lags seem also possible. 
+
+- vaccinations are a measure that deviates from the non-pharmaceutical measures included in this analysis via the OxCGRT-dataset and therefore it would affect the reproduction number without the relation to the policy stringency, thus it would have to be included as a covariate, which however is beyond the complexity which can be covered in this short analysis paper
+- this is the case for the UK, where the vaccination program is already very advanced, which was therefore excluded from this analysis 
+- the time series are right-truncated on 25 March 2021 because on this day, all four countries had reached the point where 10% of its populations were vaccinated. Before that point, it can be argued, the vaccinations had only a negligible effect on Rt, and after that time the vaccination programs began to pick up more speed with an effect on R quickly becoming more likely
 
 
 
 
 - Regression equations
 - Data used is as of 2021-06-18
+
+Our approach is largely unaffected by the social and epidemiological contexts of the different countries. By looking at how closely the trends in the reproduction rate and policy stringency correspond for each country, different absolute case numbers are equally unimportant as are different levels of how stringent policies are being adhered to by the population. For example France has had almost twice as many COVID-19-cases as did Germany per population, however, if the trends in reproduction rate corresponded in the same degree to the trends policy stringency in both countries, the policies would have shown to be equally effective in both countries - with the only difference that policy makers in France decided to tolerate higher case numbers than in Germany. The same goes for how strictly policies are being adhered to: In one country, the policy stringency might have to be higher to achieve the same degree of e.g. mobility reduction and social distancing, however, if the policy stringency corresponded in its trend to the trend of the reproduction rate, the policies decided upon would show the same effectiveness as in another country where policy adherence might be higher.
 
 ```{r data}
 ## Adding the Policy Data -----
@@ -94,7 +107,7 @@ data <- policy_data %>%
   full_join(cases_data, by = c("Date", "CountryName"))
 
 ## Restricting the date range
-data <- data %>% filter(Date >= as.Date("2020-03-03")) %>% drop_na()
+data <- data %>% filter(Date >= as.Date("2020-03-03") & Date < as.Date("2021-03-25")) %>% drop_na()
 
 ## Make daily data weekly
 
@@ -753,7 +766,7 @@ acf(as.numeric(resid(ARDL100100Italy.dyn)), main = "Autocorrelation of Error Ter
 acf(as.numeric(resid(ARDL100110Spain.dyn)), main = "Autocorrelation of Error Term for Spain ARDL(1,0;0,1,1) Model")
 ```
 
-Indeed, the error-terms are not correlated, except for one case in Spain, where the autocorrelation of the error term at lag 4 is statistically significant with p >= 0.05. However, this should not come as a surprise when testing the autocorrelation for 64 lags in total and therefore should not be too concerning.
+Indeed, the error-terms are not correlated.
 
 Now, there are several approaches that we can interpret these models.
 - First, we can look at the sign of the coefficients. Does an increasing policy stringency lead to lower reproduction rates in all cases? 
@@ -798,4 +811,5 @@ legend("topright", c("France", "Germany", "Italy", "Spain"), col=1:ncol(roll_var
 As we can see, the rolling variance of the error term decreases over time for all of our models. Because we are assuming a linear relationship between changes in policy stringency and changes in the reproduction rate, the decreasing error means an increased coherence between the changes in policy stringency and changes in the reproduction rate within the observed countries. This means that in Italy, France, Germany and Spain, policies have become more effective over time in the sense that the chosen changes in policy stringency have more and more led to the expected changes in reproduction rate - over-shooting or underwhelming their goal less and less.
 
 # Conclusion
+- further research could be a more qualitative comparative case study, that connects these findings to a more in-depth view of the succession of events in each country
 
