@@ -1,9 +1,10 @@
 ---
-title: "SOCM034- Assignment_3-20210609"
+title: "COVID-19 Policy Effectiveness"
+subtitle: "A comparative time series-analysis of France, Germany, Italy and Spain"
 author: "Philipp Holz"
-date: "6/7/2021"
+date: "28 June 2021"
 output: html_document
-bibliography: SOCM034_references.bib
+bibliography: references.bib
 ---
 
 ```{r setup, echo = FALSE, message=FALSE, warning=FALSE}
@@ -26,73 +27,81 @@ setwd("~/Documents/GitHub/Covid19-PolicyEffectiveness")
 ```
 
 # Introduction
-Like no other event in recent history, the COVID-19 pandemic has drawn attention to policy makers and the effectiveness of their work. Scientific insight and epidemiological experts were at the forefront of the debate and newspapers found themselves citing regularly from pre-published papers in search for answers to the correct way to tackle this pandemic. For social science researchers interested in the policy process and impact analysis, this of course presented a unique opportunity to compare policy making across countries and governments, and, because the COVID-19 pandemic led to the creation and assembly of data like no other societal challenge before it, statistical methods are more than ever suitable in doing so.
+Like no other event in recent history, the COVID-19 pandemic has drawn attention to policy makers and the effectiveness of their work around the world. Scientific insight and epidemiological experts were at the forefront of the debate and newspapers found themselves citing regularly from pre-published papers in search for answers to the correct way of tackling this pandemic. For social science researchers interested in the policy process and impact analysis, this presents a unique opportunity to compare the empiry of policy making across countries and governments. And because, the COVID-19 pandemic led to the creation and assembly of data like perhaps no other singular societal challenge before it, statistical methods are more than ever suitable in doing so.
 
-In the following, I will 
+Policy-makers opted for a wide variety of COVID-19-related measures, among them "school closings, travel restrictions, bans on public gatherings, emergency investments in healthcare facilities, new forms of social welfare provision, contact tracing and other interventions to contain the spread of the virus, augment health systems and manage the economic consequences of these actions" [@haleGlobalPanelDatabase2021, p. 529]. The measures were intended "to prevent infection introduction, contain outbreaks, and reduce peak epidemic size so that healthcare systems do not become overwhelmed" [@liuImpactNonpharmaceuticalInterventions2021, p. 41]. 
 
-[@yoberoTimeSeriesRegression2017]
+However, at the same time, there was "substantial variation" both in the stringency of governments' responses to the pandemic [@pulejoElectoralConcernsReduce2021, p. 1], and in the combination of measures adopted [see @rozanovaComparingScopeEfficacy2020, p. 3]. Obviously, some of this variation can be attributed to "the severity and timing of the outbreak[s]" [@pulejoElectoralConcernsReduce2021, p. 1] and to the initial scientific uncertainty regarding the most effective measures to contain the spread of the virus. 
+
+At the same time however, policy makers also had to strike a balance between the potential epidemiological effectiveness of the interventions and their "psychological, social and economic cost" [@liuImpactNonpharmaceuticalInterventions2021, p. 41] as "restrictive measures have been shown to hurt the economy, and distribute their burden unequally across the population" [@pulejoElectoralConcernsReduce2021, p. 1]. Thus, more recent research focuses on the "extent to which political considerations have shaped public policy" [@pulejoElectoralConcernsReduce2021, p. 1] over the course of the pandemic. 
+
+This is also the aim of this analysis, which tries to answer the following question:
+
+_How does the epidemiological effectiveness of policy making with COVID-19-related, restrictive policies compare among selected European countries?_
+
+In doing so, this analysis assumes a more abstract perspective, where epidemiological effectiveness of policy making is evaluated in terms of both the timeliness and the impactfulness of the COVID-19-related policies implemented. The countries compared are France, Germany, Italy, and Spain, which were selected based on their membership to the EU - which means they have started their vaccination programs at the same time - and based on them being the largest of the EU-member states in terms of population and GDP.
+
+With this scope, this essay will serve as a starting point for researchers, who try to understand the impact of other, non-epidemiological motivations on COVID-19-related policy making, which could lead to findings on both the effectiveness of different polities, and to findings on how governments were able to best strike the compromise between epidemiological, political and socio-economic concerns.
+
+In the following, I will first give an overview of and discuss published research on the topic and with similar approaches. Then, I will present and justify my method, guide the reader through the analysis, which will lead to the respective models and regression tables that I will present as my results. Finally, I will discuss potential interpretations of these findings and possible shortcomings of my approach.
 
 # Literature Review
+The coronavirus disease 2019 (COVID-19) is a "respiratory infectious disease caused by the severe acute respiratory syndrome cronavirus 2 (SARS-CoV-2), which was first detected in early December 2019 in Wuhan, China." [@kohEstimatingImpactPhysical2020, p. 42] As of June 2021, there have been 180 million confirmed cases of COVID-19, including 3.9 million deaths reported to the WHO. [@WHOCoronavirusCOVID192021] 
 
+Early descriptive studies found that "the response to COVID-19 pandemic varied significantly between different countries", with differences being the result of "differences in healthcare system capabilites and organization, emergency response availability and preparedness, underlying economic conditions in each country, prevalence of different social behavior patterns, and last but not least - the differences in individual assumptions and preferred approaches of the policymakers." [@rozanovaComparingScopeEfficacy2020, p. 3]
 
-- What is $R_{eff}$?
-- What is the Policy Stringency Index?
-- What measures did the countries take?
-- How were the policy approaches of the different countries compared?
-  - this might be too much for this analysis
-  
-- findings of li and liu seem to be different
+When more empirical data became available, further studies compared the epidemiological effectiveness of different measures and found that e.g. there was strong evidence for the effectiveness of school closures and internal movement restrictions [@liuImpactNonpharmaceuticalInterventions2021, p. 19], as well as workplace closures, and public events bans [@liTemporalAssociationIntroducing2021, p. 193], however with contradictory findings e.g. regarding requirements to stay at home [compare @liuImpactNonpharmaceuticalInterventions2021, p. 19; @liTemporalAssociationIntroducing2021, p. 193].
 
-- while other papers have research effectiveness of different measures, and now that these effective measures are mostly known, we can go into the retrospective and check, which polities have produced the most effective policies
+Two measures central to these studies that have frequently been used together are the policy stringeny index, which is part of the Oxford COVID-19 Government Response Tracker (OxCGRT) [@haleGlobalPanelDatabase2021], and the time-varying reproduction number. [compare @kohEstimatingImpactPhysical2020] 
 
+The OxCGRT is "provides a systematic set of cross-national, longitudinal measures of government responses from 01 January 2020. [It] tracks national [...] governments' policies and interventions across a standardized series of indicators." [@haleGlobalPanelDatabase2021, p. 529] The policy stringency index ranges from 0 to 100 with a higher index indicating increased stringency [@kohEstimatingImpactPhysical2020, p. 44], and includes policies that either "(i) limit individual freedom (of work, movement or gathering), (ii) shut down public services and events in order to reduce mobility, or (iii) deliver information about the necessity to comply with these measures." [@pulejoElectoralConcernsReduce2021, p. 2]
 
+While a number of other datasets have also tracked governments responses to the SARS-CoV-2 pandemic, these OxCGRT project stands out by setting the jurisdiction day as its unit of analysis, instead of the respective government policy. As Hale et al. note, each approach can be converted into the other, but using the former facilitates conventional analysis. [@haleGlobalPanelDatabase2021, p. 537]
+
+The viral transmission rate $R$ on the other hand is frequently used as a measure to describe the expected dynamic of the pandemic. $R_{0}$ describes the expected number of secondary cases a primary case would generate if the entire population was suceptible to it and no containment measures would be taken, whereas the time-varying reproduction number $R_{t}$ describes how many secondary cases a primary case is expected to generate at any given point in time, meaning that a sustained value of $R_{t}$ greater than one indicates that an outbreak is likely, whereas a sustained value of $R_{t}$ smaller than one indicates that the virus will eventually die out. [compare @kohEstimatingImpactPhysical2020; @liTemporalAssociationIntroducing2021]
 
 # Method
-We are interested in understanding, how changes in the Stringency Index affect the changes in the Reproduction Rate, thus we will be using different lags of the Stringency Index, where regressing the Stringency Index at lag 1 on the Reproduction Rate would be showing, how changes in the Stringency Index affect changes in the Reproduction Rate one week after the changes in the Stringency Index. As symptoms show roughly 5 days after the infection and thus infections are usually discovered at the earliest 5 days after the infection happened, such a lag seems plausible. As making a test, evaluating the test and reporting the test results can take more time, more lags seem also possible. 
+In order to answer our question of how the epidemiological effectiveness of policy making with COVID-19-related, restrictive policies compares across selected countries, we are interested in seeing how changes in the policy stringency in these countries affect the time-varying reproduction number $R_{t}$. Thus, in our analysis, we set reproduction rate as our outcome variable and the policy stringency index as our explanatory variable.
 
-- vaccinations are a measure that deviates from the non-pharmaceutical measures included in this analysis via the OxCGRT-dataset and therefore it would affect the reproduction number without the relation to the policy stringency, thus it would have to be included as a covariate, which however is beyond the complexity which can be covered in this short analysis paper
-- this is the case for the UK, where the vaccination program is already very advanced, which was therefore excluded from this analysis 
-- the time series are right-truncated on 25 March 2021 because on this day, all four countries had reached the point where 10% of its populations were vaccinated. Before that point, it can be argued, the vaccinations had only a negligible effect on Rt, and after that time the vaccination programs began to pick up more speed with an effect on R quickly becoming more likely
+Because vaccinations against COVID-19 have an effect on $R_{t}$, but deviate from the restrictive, non-pharmaceutical measures that we include in this analysis via the stringency index, we are only considering a specific time frame where vaccinations against COVID-19 are still unlikely to have a significant effect on $R_{t}$. Because it is without a doubt difficult to pinpoint such a point in time, we chose the date when, in the countries included, ~10% of the population has received at least on vaccine dosis. As the vaccination program in the countries included advanced synchronously, all four countries reached this point on 25 March 2021. Thus, the time frame covered in this research stretches from 03 March 2020, from when on we have data on the time-variable reproduction rate $R_{t}$, obtained from OurWorldInData.org [@ritchieCoronavirusPandemicCOVID192020], to 25 March 2021. The data was obtained as of 18 June 2021.
 
+An alternative approach to simply restricting the time frame covered in this analysis would be to use a multi-variate approach in our regression analysis, where we could include the share of the vaccinated population as a covariate. However, this is unfortunately beyond the complexity which can be covered in this short analysis. Choosing to restrict the time frame instead, also meant excluding the United Kingdom from this analysis, as there the vaccination program was already very advanced, which would have resulted in comparatively little data.
 
+Furthermore, we have to expect that there is a possible time delay between the change in policy stringency and the change in the reproduction rate. This delay accumulates as the sum of (i) the incubation period from an infection with SARS-CoV-2 to the possible appearance of symptoms, and (ii) the possible delay between the appearance of symptoms and their reporting. [see @liuImpactNonpharmaceuticalInterventions2021, p. 42] As symptoms show roughly 5 days after the infection and thus infections are usually discovered at the earliest 5 days after the infection happened, such a lag seems plausible. [@lauerIncubationPeriodCoronavirus2020] As making a test then can take more time, more lags seem also possible. Thus, as will be layed out in more detail in the analysis, part of our model fitting strategy will be to find the correct lag of the explanatory variable, the policy stringency index, versus our outcome variable, the reproduction rate $R_{t}$, where regressing the stringency index at lag 1 on the reproduction rate would be showing, how changes in the stringency index affect changes in the reproduction rate one week after the changes in the stringency index occured.
 
+As we are defining _epidemiological effectiveness_ of the policy making both in terms of the timeliness and impactfulness of the policies adopted, the aim of our analysis will be to find the best fitting model for each of the four countries and compare both the respective lags of the explanatory variable, at which the best model fit was achieved - denoting the timeliness of the policies, and the respective coefficients, which denote the impactfulness of the policies adopted in each country.
 
-- Regression equations
-- Data used is as of 2021-06-18
-
-Our approach is largely unaffected by the social and epidemiological contexts of the different countries. By looking at how closely the trends in the reproduction rate and policy stringency correspond for each country, different absolute case numbers are equally unimportant as are different levels of how stringent policies are being adhered to by the population. For example France has had almost twice as many COVID-19-cases as did Germany per population, however, if the trends in reproduction rate corresponded in the same degree to the trends policy stringency in both countries, the policies would have shown to be equally effective in both countries - with the only difference that policy makers in France decided to tolerate higher case numbers than in Germany. The same goes for how strictly policies are being adhered to: In one country, the policy stringency might have to be higher to achieve the same degree of e.g. mobility reduction and social distancing, however, if the policy stringency corresponded in its trend to the trend of the reproduction rate, the policies decided upon would show the same effectiveness as in another country where policy adherence might be higher.
+This means, our approach is largely unaffected by the social and epidemiological contexts of the different countries. Instead, by simply looking at how closely the trends in the reproduction rate and policy stringency correspond for each country, different absolute case numbers are equally unimportant as are different levels of how stringent policies are being adhered to by the population. For example France has had almost twice as many COVID-19-cases as did Germany per population [@ritchieCoronavirusPandemicCOVID192020], however, if the trends in reproduction rate corresponded in the same degree to the trends policy stringency in both countries, the policies would have shown to be equally effective in both countries - with the only difference that policy makers in France decided to tolerate higher case numbers than in Germany. The same goes for how strictly policies are being adhered to: In one country, the policy stringency might have to be higher to achieve the same degree of restrictions on mobility social gatherings, however, if the policy stringency corresponded in its trend to the trend of the reproduction rate, the policies decided upon would show the same effectiveness as in another country where policy adherence might be higher.
 
 ```{r data, appendix = TRUE}
-## Adding the Policy Data -----
-### Read in the Data
+# Adding Policy Stringency Data
+
 #policy_data <- read.csv(url("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv"))
-# write.csv(policy_data, file = "PolicyData.csv")
 
 policy_data <- read.csv("PolicyData.csv")
 
-### convert Date column to date format
+# coerce Date column to date format
 policy_data$Date = as.Date(as.character(policy_data$Date), format = "%Y%m%d")
 
-### create dataframe with only national level data
+# create dataframe with only national level data
 policy_data <- policy_data %>% filter(Jurisdiction == "NAT_TOTAL")
 
-### create dataframe with only national level of selected countries
+# select countries
 policy_data <- policy_data %>% filter(CountryCode == "DEU" |
                                        CountryCode == "ITA" |
                                        CountryCode == "FRA" |
                                        CountryCode == "ESP")
 
-### Only selecting the columns that are interesting
+# only selecting the columns that are interesting
 policy_data <- policy_data %>% select(Date, CountryName, StringencyIndex)
 
-## Adding the Cases Data ----
+# Adding the Data on Reproduction Rate
 
-###read the Dataset sheet in
 #cases_data <- read.csv(url("https://covid.ourworldindata.org/data/owid-covid-data.csv"))
-# write.csv(cases_data, file = "CasesData.csv")
 
 cases_data <- read.csv("CasesData.csv")
 
+# select countries and columns of interest
 cases_data <- cases_data %>% filter(location == "France" |
                                     location == "Italy" |
                                     location == "Germany" |
@@ -102,31 +111,34 @@ cases_data <- cases_data %>% filter(location == "France" |
                                     Date = date,
                                     ReproductionRate = reproduction_rate)
 
-### Forcing Date format
+# coercing to date format
 cases_data$Date <- as.Date(as.character(cases_data$Date), format = "%Y-%m-%d")
 
-## Merging policy mobility trends and cases data on date and country ----
+# merging policy stringency and reproduction rate data on date and country
 data <- policy_data %>% 
   full_join(cases_data, by = c("Date", "CountryName"))
 
-## Restricting the date range
+# restricting the date range
 data <- data %>% filter(Date >= as.Date("2020-03-03") & Date < as.Date("2021-03-25")) %>% drop_na()
 
-## Make daily data weekly
+# Make Daily Data Weekly
 
-## Extract day of the week (Saturday = 6)
+# extract day of the week (saturday = 6)
 data$Week_Day <- as.numeric(format(data$Date, format='%w'))
 
-## Adjust end-of-week date (first saturday from the original Date)
+# adjust end-of-week date (first saturday from the original date)
 data$End_of_Week <- data$Date + (6 - data$Week_Day)
 
-## Aggregate over week and Country
+# aggregate over week and country
 Stringency_weekly <- aggregate(StringencyIndex~End_of_Week+CountryName, FUN=mean, data=data, na.rm=TRUE)
 ReproductionRate_weekly <- aggregate(ReproductionRate~End_of_Week+CountryName, FUN=mean, data=data, na.rm=TRUE)
 
+# merge weekly data
 data_weekly <- Stringency_weekly %>%
   full_join(ReproductionRate_weekly, by = c("End_of_Week", "CountryName")) %>%
   rename(Date = End_of_Week)
+
+# Creating Subsets for Countries
 
 France <- data_weekly %>% 
   filter(CountryName == "France") %>% 
@@ -140,34 +152,37 @@ Germany <- data_weekly %>%
 Spain <- data_weekly %>% 
   filter(CountryName == "Spain") %>% 
   rename(R = ReproductionRate, S = StringencyIndex)
+
 ```
 
 ```{r ts, appendix = TRUE}
-# Convert to time series objects
-
-# Time series objects for individual countries
+# Convert to Time Series Objects
 France.ts <- ts(France[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Germany.ts <- ts(Germany[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Italy.ts <- ts(Italy[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Spain.ts <- ts(Spain[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
+
 ```
 
-On first sight, the time series for reproduction rate and stringency index could be correlated. The Reproduction Rate is high when the stringency is low and vice versa. However, in order to properly analyse any statistical relation between the two time series, we have to make sure they are stationary.
-
-- stationarity means ...
-
-A time series is not stationary if it shows autocorrelation where a time series observation is significantly correlated to any of its predecessors.
+# Analysis
+In the following, we will approach our final models by looking at the arbitrarily chosen example of France. On first sight, the time series for the time-varying reproduction rate and the stringency index could be correlated. The reproduction rate is high when the stringency is low and vice versa. Also, they do not show a clear linear trend or seasonality for this time frame, while they do, however, show strong persistence, where one observation depends on one or more of its predecessors.
 
 ```{r cor, fig.height=6, fig.width=6, appendix = TRUE}
+# Plot Time Series for France
 par(mfrow = c(2,1), cex = 0.8, mar = c(2, 4, 2, 4), oma = c(2, 2, 2, 2))
 plot(France.ts[,"R"], ylab="Reproduction Rate", main = "Time Series for Reproduction Rate and Stringency Index in France", cex.main = 0.9)
 plot(France.ts[,"S"], ylab="Stringency Index")
 
 ```
 
-First off, we can make a visual assessment of correlation between the time series and its lags. As we can see, there is strong correlation between the Reproduction Rate and its first lag, while already for the second lag this correlation is less strong.
+In order to properly analyse any statistical relation between the two time series, we have to make sure to avoid falling for spurious correlations, where a possible correlation could be the result of a confounding factor. We can do so by transforming the time series in a way that they become stationary, meaning that they should not be explosive, nor trending, and nor wandering aimlessly without returning to its mean. [@yoberoTimeSeriesRegression2017]
+
+While our time series already fulfill the first two of these characteristics, they do have the characteristics of a random walk, having no specified mean or variance, but strong dependence over time. [@mattesonTimeSeriesAnalysis2021]
+
+First off, we can make a visual assessment of correlation between the time series and its lags. As we can see, there is strong correlation between e.g. the reproduction rate and its first lag, while already for the second lag this correlation is less strong.
 
 ```{r fig.height=6, fig.width=6, appendix = TRUE}
+# Scatter Plot on Autocorrelation for Reproduction Rate in France
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 2, 4), oma = c(2, 2, 2, 2))
 
 rrL1 <- data.frame(cbind(France[,"R"], lag(France[,"R"],1)))
@@ -185,41 +200,51 @@ plot(rrL2, ylab = "Reproduction Rate at Lag 2", xlab = "Reproduction Rate")
 meanR <- mean(rrL2$R, na.rm=TRUE)
 abline(v=meanR, lty=2)
 abline(h=mean(rrL2$RL2, na.rm=TRUE), lty=2)
+
 ```
 
-One handy method to check autocorrelation for many lags is via a correlogram which shows the autocorrelation function. In the following correlograms we can see that both Reproduction Rate is significantly correlated for up to three lags. The Stringency Index is significantly correlated for even more lags.
+One handy method to check autocorrelation for many lags is via a correlogram which shows the autocorrelation function. In the following plots we can see that the reproduction rate is significantly correlated to up to three lags and the stringency index is significantly correlated for even more lags.
 
 ```{r fig.height=6, fig.width=6, appendix = TRUE}
+# Plot Autocorrelation Function for Reproduction Rate and Stringency Index for France
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
 acf(France.ts[1:nrow(France.ts), "R"], main = "Autocorrelation for Reproduction Rate for France", cex.main = 0.9)
 acf(France.ts[1:nrow(France.ts), "S"], main = "Autocorrelation for Stringency Index for France")
+
 ```
 
-One way to approach stationarity in time series is by differencing the time series. The interpretation changes accordingly, meaning that in the following we will estimate effects in terms of the *changes* in the time series.
+One way to approach stationarity when dealing with a random walk is to take the _first difference_ of the time series. The interpretation changes accordingly, meaning that we would now estimate effects in terms of the _changes_ in the time series. The resulting time series would be as follows.
 
 ```{r diff, fig.height=6, fig.width=6, appendix = TRUE}
+# Plot First Difference of Time Series for France
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
 plot(diff(France.ts[,"R"]), main = "First difference of Reproduction Rate for France", ylab = "diff(Reproduction Rate)")
 plot(diff(France.ts[,"S"]), main ="First difference of Stringency Index for France", ylab = "diff(Stringency Index)")
+
 ```
 
-While the time series approach random noise now, as they are mean reverting, some significant differences remain. Among these is that there is no constant variance in the differences time series, meaning, there is heteroskedasticity present in the data, which means we cannot reliably estimate test statistics. However, we have gotten rid of the autocorrelation in the data. We can check this, again, by plotting the autocorrelation function.
+Again, we can reliably check, whether we have gotten rid of the autocorrelation in the data by plotting the autocorrelation function.
 
 ```{r fig.height=6, fig.width=6, appendix = TRUE}
+# Plot Autocorrelation Function for Differenced Time Series
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
 acf(diff(France.ts[1:nrow(France.ts), "R"]), main = "Autocorrelation for First Difference of Reproduction Rate for France", cex.main = 0.9)
 acf(diff(France.ts[1:nrow(France.ts), "S"]), main = "Autocorrelation for First Difference of Stringency Index for France")
 
 ```
 
-While we are able to more or less get rid of the autocorrelation in the Stringency Index through differencing, the autocorrelation in the Reproduction Range remains. This means we will have to fit an autoregressive distributed lag model, which incorporates both an autoregressive term, where the dependent variable Reproduction Rate is regressed on its lag, and several lags of the independent variables.
+While we are able to eliminate the autocorrelation in the stringency index through differencing, the autocorrelation in the reproduction rate remains.
 
-- What lags are we checking?
-  - two lags for the dependent variable, the independent variable with the different combinations of lags 0 to 3, meaning we are checking models with lags 0; 1; 2; 3; 0 and 1; 0 and 2; 0 and 3; 1 and 2; 1 and 3; 2 and 3; 0, 1 and 2; 0, 2 and 3; 1, 2 and 3; and 0, 1, 2 and 3.
+Thus, we choose to fit an autoregressive distributed lag (ARDL) model with the first difference of both time series. The ARDL model incorporates an autoregressive term, where the dependent variable reproduction rate is regressed both on its own lag, and on several lags of the independent variables.
+
+By including e.g. one lagged term of the dependent variable reproduction rate, we would assume that changes in the reproduction rate only have an impact on changes in the reproduction rate one week after. The same assumption is made when including lags of the changes in the explanatory variable stringency index. 
+
+The challenge then, is to choose the right lengths of these lags. Here, "some degree of subjectivity and judgment" is required. [@yoberoTimeSeriesRegression2017] In our modelling strategy, we are checking the model fit for lags 1, as well as 1 and 2, for the dependent variable reproduction rate, combined with different combinations of lags 0 to 3 of the explanatory variable stringency index. This means for stringency index we are checking the lags 0; 1; 2; 3; 0 and 1; 0 and 2; 0 and 3; 1 and 2; 1 and 3; 2 and 3; 0, 1 and 2; 0, 2 and 3; 1, 2 and 3; and 0, 1, 2 and 3.
 
 ```{r appendix = TRUE}
-# Models
-## France
+# Specify the Models
+
+# France
 ARDL101000France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=France.ts)
 ARDL100100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=France.ts)
 ARDL100010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=France.ts)
@@ -248,7 +273,7 @@ ARDL111110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(
 ARDL111011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=France.ts)
 ARDL111111France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=France.ts)
 
-## Germany
+# Germany
 ARDL101000Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=Germany.ts)
 ARDL100100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=Germany.ts)
 ARDL100010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=Germany.ts)
@@ -277,7 +302,7 @@ ARDL111110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d
 ARDL111011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=Germany.ts)
 ARDL111111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=Germany.ts)
 
-## Italy
+# Italy
 ARDL101000Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=Italy.ts)
 ARDL100100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=Italy.ts)
 ARDL100010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=Italy.ts)
@@ -306,7 +331,7 @@ ARDL111110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S
 ARDL111011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=Italy.ts)
 ARDL111111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=Italy.ts)
 
-## Spain
+# Spain
 ARDL101000Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=Spain.ts)
 ARDL100100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=Spain.ts)
 ARDL100010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=Spain.ts)
@@ -337,12 +362,8 @@ ARDL111111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S
 
 ```
 
-- What is the criterium for choosing the right model for each country?
-  - we check several criteria, r squared, the test statistic, AIC and BIC
-  - in our case, we have found the AIC and BIC criteria to produce models for our purposes
-  - for all countries we choose the model with the lowest AIC and BIC scores
-
-```{r appendix = TRUE, eval = FALSE}
+```{r eval=FALSE, appendix=TRUE}
+# Getting Test Statistics for Models
 # France
 glARDL101000France.dyn <- glance(ARDL101000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 glARDL100100France.dyn <- glance(ARDL100100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
@@ -725,24 +746,48 @@ tabl_Spain %>%
 
 ```
 
-None of the best performing models include a lag 2 of the dependent variable, nor a lag 3 of the independent variable. This indicates that we don't have to test models with more lags than that. Also, the best performing models all have subsequent lags, which is in line with our finding of some persistence in the time series for reproduction rate and the stringency index, even after differencing.
+While we test several criteria in choosing the right model for each country, we have settled with choosing the models with the lowest Akaike-Information-Criterion (AIC) and Bayesian-Information-Criterion (BIC), following an approach that was also chosen by [@liuImpactNonpharmaceuticalInterventions2021]. Please see the results of this comparison in the appendix. The resulting models have the following equations:
 
-Let's check, whether the error terms are autocorrelated.
+>Germany ARDL(1,0;1,1,0,0)
+>
+>$DR_{t} = \alpha + \beta_{1}DR_{t-1} + \beta_{2}DS_{t} + \beta_{2}DS_{t-1} + v_{t}$
+
+
+>France ARDL(1,0;1,1,0,0)
+>
+>$DR_{t} = \alpha + \beta_{1}DR_{t-1} + \beta_{2}DS_{t} + \beta_{2}DS_{t-1} + v_{t}$
+
+
+> Spain ARDL(1,0;0,1,1,0)
+>
+>$DR_{t} = \alpha + \beta_{1}DR_{t-1} + \beta_{2}DS_{t-1} + \beta_{2}DS_{t-2} + v_{t}$
+
+
+>Italy ARDL(1,0;0,1,0,0)
+>
+>$DR_{t} = \alpha + \beta_{1}DR_{t-1} + \beta_{2}DS_{t-2} + v_{t}$
+
+Note that we are using a perhaps unusual shorthand  in referring to the models, that reads as ARDL($p_{t-1}$, $p_{t-2}$; $q_{t}$, $q_{t-1}$, $q_{t-2}$, $q_{t-3}$), where $p$ denotes the auto-regressive term of the outcome variable and $q$ denotes the distributed lag term of the explanatory variable. A _1_ indicates the presence of the respective lag and a _0_ its absence.
+
+Because none of the best performing models include a lag 2 of the dependent variable, nor a lag 3 of the independent variable, we make the assumption that models with more lags than these will not produce better results. Also, the best performing models all have subsequent lags, which is in line with our finding of some persistence in the time series for reproduction rate and the stringency index, even after differencing.
+
+We can also use the correlogram to check whether the ordinary least squares assumption that observations of the error term are uncorrelated with each other is violated in our models. As we can see below, this is not the case.
 
 ```{r fig.height=12, fig.width=6, appendix = TRUE}
-#Test ACF -- almost stationary
+# Plot Autocorrelation Function for Model Residuals
 par(mfrow = c(4,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
 acf(as.numeric(resid(ARDL101100France.dyn)), main = "Autocorrelation of Error Term for France ARDL(1,0;1,1,0) Model")
 acf(as.numeric(resid(ARDL101100Germany.dyn)), main = "Autocorrelation of Error Term for Germany ARDL(1,0;1,1,0) Model")
 acf(as.numeric(resid(ARDL100100Italy.dyn)), main = "Autocorrelation of Error Term for Italy ARDL(1,0;0,1,0) Model")
 acf(as.numeric(resid(ARDL100110Spain.dyn)), main = "Autocorrelation of Error Term for Spain ARDL(1,0;0,1,1) Model")
-```
 
-Indeed, the error-terms are not correlated.
+```
 
 # Results
 The following regression tables show the results for the models we have chosen through our modelling approach.
 ```{r appendix = TRUE}
+# Plot Regression Tables
+
 # France
 res_France <- tidy(summary(ARDL101100France.dyn))
 colnames(res_France) <- c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
@@ -769,24 +814,22 @@ res_Spain %>% kbl(digits = 4, caption="Goodness-of-fit statistics for Spain ARDL
 
 ```
 
-For all of the countries both the effect of the lagged changes in Reproduction Rate and the effect of changes in the Stringency Index at the lags chosen are statistically significant at the p<0.05-level.
-
-Now, there are several approaches that we can interpret these models.
+For all of the countries both the effect of the lagged changes in Reproduction Rate and the effect of changes in the Stringency Index at the lags chosen are statistically significant at the p<0.05-level. Now, there are several approaches through which we can interpret these models. 
 - First, we can look at the sign of the coefficients. Does an increasing policy stringency lead to lower reproduction rates in all cases? 
-- Second, we can look at the strength of the effects. In which country do the changes in policy stringency lead to the highest changes in reproduction rates? 
-- Thirdly, we can look at the specific lags for the changes in the Stringency Index that produced the best model fit. What does it mean when in Germany and France lags of zero and one week of changes in the Stringency Index best explain changes in the Reproduction rate, while in Italy the best model fit is at a lag of one week, and in Spain the best model fit is at a lag of one and two weeks?
+- Second, we can look at the strength of the effects. In which country do changes in policy stringency lead to the highest impact on the reproduction rate? 
+- Thirdly, we can look at the specific lags for the changes in the Stringency Index that produced the best model fit. What does it mean when in Germany and France lags of zero and one week of changes in the stringency index best explain changes in the Reproduction rate, while in Italy the best model fit is at a lag of one week, and in Spain the best model fit is at a lag of one and two weeks? 
 - Fourthly, we can look at the model residuals.
 
-The sign of the coefficients is in line with our expectations, where increases in the policy stringency would lead to decreases in the reproduction rate. However, this comes with an exception in the case of Spain, where changes towards more strict policies lead to increases in the reproduction rate in the first week after the change, and only in the second week after the change the reproduction rate is lowered as expected.
+The sign of the coefficients is in line with our expectations, where increases in the policy stringency, meaning e.g. more restrictive social distancing measures, lead to the deceleration of the growth in the reproduction rate, or an acceleration in the decline of the reproduction rate. However, this comes with an exception in the case of Spain, where changes towards more strict policies lead to increases in the reproduction rate in the first week after the change, and only in the second week after the change the reproduction rate is lowered as expected.
 
-Strength of the effects...
+Secondly, the strength of the effects differs across the four countries, although not substantially. In France, a one point increase in the policy stringency add on average -0.0051 to the changes in the time-variable reproduction rate immediately when the changes in the policy stringency occur, and -0.0062 one week after the changes occur. Meanwhile in Germany the impact of a change in policy stringency is a little bit higher with a one point increase in the policy stringency adding -0.0119 to the changes in the reproduction rate immediately when the change occurs and -0.0059 one week after the changes. In Italy, a one point increase in the policy stringency add -0.0088 to the changes in the time-variable reproduction rate, one week after the changes occur, and in Spain a one point increase in the policy stringency first lead to an acceleration of the growth of the reproduction rate, or respectively a deceleration in its decline one week after the changes occur, with 0.0067 added to the changes, and the expected deceleration of the growth of the reproduction rate, and accceleration in its decline two weeks after the changes occur, with -0.0093 added to the changes.
 
-Although not a very robust measure, because the differences in model fit were quite small for some cases and therefore we could have easily ended up with other lags, these differences in the optimal lag for the differenced explanatory variable can be interpreted as a measure for how quickly the changes in the reproduction rate followed the changes in policy stringency. In effect, this would mean that in Germany and France, the changes in reproduction rate followed the changes in policy stringency on the heels, while in Spain, the changes in reproduction rate would only respond to changes in the policies between one or two weeks after they come into operation.
+Although not a very robust measure, because the differences in model fit were small in some cases and therefore we could have easily ended up with other lags, the differences in the lags of the explanatory variable that led to the optimal model fit for the four countries can be interpreted as a measure for how quickly the changes in the reproduction rate followed the changes in policy stringency. In effect, this would mean that in Germany and France, the changes in reproduction rate followed the changes in policy stringency on the heels, while in Spain, the changes in reproduction rate would only respond to changes in the policies between one or two weeks after they come into operation.
 
-Let us look now at the model residuals.
+Last, but not least, and perhaps a more unconventional way to obtain model results, we can look at the model residuals.
 
 ```{r message=FALSE, warning=FALSE, fig.height=10, fig.width=6, appendix = TRUE}
-# How has the Stringency-Reproduction Rate developed?
+# Plot Model Residuals
 France_res.ts <- ts(resid(ARDL101100France.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Germany_res.ts <- ts(resid(ARDL101100Germany.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Italy_res.ts <- ts(resid(ARDL100100Italy.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
@@ -799,7 +842,7 @@ par(mfrow = c(2,1), cex = 0.8)
 ts.plot(res.ts, plot.type="single", col = 1:ncol(res.ts), main = "Model Residuals")
 legend("topright", c("France", "Germany", "Italy", "Spain"), col=1:ncol(res.ts), lty=1, cex=.65)
 
-# How has the variance of the residuals developed?
+# Plot Rolling Variance of Model Residuals
 France_var.ts <- ts(roll_var(resid(ARDL101100France.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Germany_var.ts <- ts(roll_var(resid(ARDL101100Germany.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
 Italy_var.ts <- ts(roll_var(resid(ARDL100100Italy.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
@@ -809,16 +852,22 @@ roll_var.ts <- ts.union(France_var.ts, Germany_var.ts, Italy_var.ts, Spain_var.t
 
 ts.plot(roll_var.ts, plot.type="single", col = 1:ncol(roll_var.ts), main = "2-month Rolling Variance in Model Residuals")
 legend("topright", c("France", "Germany", "Italy", "Spain"), col=1:ncol(roll_var.ts), lty=1, cex=.65)
+
 ```
 
-As we can see, the rolling variance of the error term decreases over time for all of our models. Because we are assuming a linear relationship between changes in policy stringency and changes in the reproduction rate, the decreasing error means an increased coherence between the changes in policy stringency and changes in the reproduction rate within the observed countries. This means that in Italy, France, Germany and Spain, policies have become more effective over time in the sense that the chosen changes in policy stringency have more and more led to the expected changes in reproduction rate - over-shooting or underwhelming their goal less and less.
+While we see some heteroskedasticity in the model residuals, which we will discuss in the next section, we can also see that the rolling variance of the error term decreases over time for all of our models. Because we are assuming a linear relationship between changes in policy stringency and changes in the reproduction rate, the decreasing error means an increased coherence between the changes in policy stringency and changes in the reproduction rate within the observed countries. This means that in France, Germany, Italy and Spain, policies have become more effective over time in the sense that the chosen changes in policy stringency have more and more led to the expected changes in reproduction rate - over-shooting or underwhelming their goal less and less.
 
-# Discussion
-- fail to compute correct test statistics, we could do that using this and that method
-- extend our analysis by including vaccination campaign as a covariate
+## Discussion
+In Germany and France the lag in policy stringency is even smaller than what we would expect telling from the incubation period of COVID-19. A possible reason for this is that in these countries already the media and political buildup to the announcement of more restrictive measures might have led to self-imposed restrictive behaviour in the population. [see e.g. @kauermannCODAGBerichtNr2021, p. 14] 
 
-# Conclusion
-- further research could be a more qualitative comparative case study, that connects these findings to a more in-depth view of the succession of events in each country
+Explaining the comparatively higher lags in Italy and Spain, and explaining the contradictory effect of higher policy stringency in the first week after its introduction in Spain should be the subject of a more in-depth case study. However, one study by Pulejo and Querubín, who researched "the extent to which political considerations have shaped public policy at the onset of the COVID-19 epidemic", suggests that "reelection concerns can play an important role in explaining [the] early variation in government responses, with particular regard to public health measures that can have immediate negative impact on the economy." [@pulejoElectoralConcernsReduce2021, p. 1] They find that "whenever the safeguard on public health is at odds with economic well-being, policymakers may decide to partially sacrifice the former for the latter".[@pulejoElectoralConcernsReduce2021, p. 2] Given the fact that Spain (15.4%) and Italy (10.7%) still have the highest unemployment quotas just behind Greece in the EU, with France (7.3%) being in the midfield and Germany (4.4%) having one of the lowest quotas [@EuUnemploymentRate2021], it seems plausible that in Spain and Italy, policy makers were balancing their decision more towards economic well-being than this was the case in France and Germany.
+
+Finally, in congruence with the differenced time series used in our analysis the model residuals show some heteroskedasticity. While the interpretation of our results should still hold, the existence of heteroskedasticity means we cannot realibly estimate the test statistics. For this purpose, we could either calculate heteroskedasticity and autocorrelation consistent standard errors using the Newey-West method, or we could fit an autoregressive conditional heteroskedasticity model. [@yoberoTimeSeriesRegression2017] Both these methods are however beyond the scope of this assignment.
+
+## Conclusion
+In this analysis we have tried to answer the question of how the epidemiological effectiveness of policy making with COVID-19-related, restrictive policies compares among France, Germany, Italy and Spain. We used the time-varying reproduction rate and the policy stringency index from the Oxford COVID-19 Government Response Tracker to show for each of these countries, how timely policy makers were able to lower the reproduction rate and how effectively they were able to lower the reproduction rate.
+
+While we suggested some possible avenues in explaining the differences among these countries, with the most promising coming from research that asks for non-epidemiological motivations in COVID-19-related policy making, further research could be a more qualitatively-oriented, comparative case study, that connects these findings to a more in-depth view of the succession of events in each country. Eventually, this might lead to insights not only on the most effective policies in tackling a pandemic like this one, but also on what factors lead to the effective implementation of these policies.
 
 # Bibliography
 <div id="refs"></div>
@@ -829,8 +878,9 @@ As we can see, the rolling variance of the error term decreases over time for al
 ` ` 
 
 # Appendix
-## Table 1
+## Model Selection
 ```{r}
+# Getting Test Statistics for Models
 # France
 glARDL101000France.dyn <- glance(ARDL101000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 glARDL100100France.dyn <- glance(ARDL100100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
