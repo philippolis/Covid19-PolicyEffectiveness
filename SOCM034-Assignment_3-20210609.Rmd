@@ -1,10 +1,20 @@
 ---
 title: "COVID-19 Policy Effectiveness"
-subtitle: "A comparative time series-analysis of France, Germany, Italy and Spain"
+subtitle: |
+  <center> A Comparative Time Series-Analysis of Policy-making </center>
+  <center> in France, Germany, Italy and Spain </center>
 author: "Philipp Holz"
 date: "28 June 2021"
-output: html_document
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+fontsize: 12pt
 bibliography: references.bib
+header-includes:
+- \usepackage{longtable}
+ \usepackage{float}
+ \floatplacement{figure}{H}
 ---
 
 ```{r setup, echo = FALSE, message=FALSE, warning=FALSE}
@@ -25,6 +35,46 @@ library(roll) # for rolling variance roll_var function
 setwd("~/Documents/GitHub/Covid19-PolicyEffectiveness")
 
 ```
+
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` `
+
+\listoftables
+
+\listoffigures
+
+` `   
+` ` 
+` `   
+` `  
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
 
 # Introduction
 Like no other event in recent history, the COVID-19 pandemic has drawn attention to policy makers and the effectiveness of their work around the world. Scientific insight and epidemiological experts were at the forefront of the debate and newspapers found themselves citing regularly from pre-published papers in search for answers to the correct way of tackling this pandemic. For social science researchers interested in the policy process and impact analysis, this presents a unique opportunity to compare the empiry of policy making across countries and governments. And because, the COVID-19 pandemic led to the creation and assembly of data like perhaps no other singular societal challenge before it, statistical methods are more than ever suitable in doing so.
@@ -73,10 +123,11 @@ As we are defining _epidemiological effectiveness_ of the policy making both in 
 
 This means, our approach is largely unaffected by the social and epidemiological contexts of the different countries. Instead, by simply looking at how closely the trends in the reproduction rate and policy stringency correspond for each country, different absolute case numbers are equally unimportant as are different levels of how stringent policies are being adhered to by the population. For example France has had almost twice as many COVID-19-cases as did Germany per population [@ritchieCoronavirusPandemicCOVID192020], however, if the trends in reproduction rate corresponded in the same degree to the trends policy stringency in both countries, the policies would have shown to be equally effective in both countries - with the only difference that policy makers in France decided to tolerate higher case numbers than in Germany. The same goes for how strictly policies are being adhered to: In one country, the policy stringency might have to be higher to achieve the same degree of restrictions on mobility social gatherings, however, if the policy stringency corresponded in its trend to the trend of the reproduction rate, the policies decided upon would show the same effectiveness as in another country where policy adherence might be higher.
 
-```{r data, appendix = TRUE}
+```{r data, appendix=TRUE, include=FALSE}
 # Adding Policy Stringency Data
 
-#policy_data <- read.csv(url("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv"))
+#policy_data <- 
+read.csv(url("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv"))
 
 policy_data <- read.csv("PolicyData.csv")
 
@@ -119,7 +170,9 @@ data <- policy_data %>%
   full_join(cases_data, by = c("Date", "CountryName"))
 
 # restricting the date range
-data <- data %>% filter(Date >= as.Date("2020-03-03") & Date < as.Date("2021-03-25")) %>% drop_na()
+data <- data %>% 
+  filter(Date >= as.Date("2020-03-03") & Date < as.Date("2021-03-25")) %>% 
+  drop_na()
 
 # Make Daily Data Weekly
 
@@ -130,8 +183,14 @@ data$Week_Day <- as.numeric(format(data$Date, format='%w'))
 data$End_of_Week <- data$Date + (6 - data$Week_Day)
 
 # aggregate over week and country
-Stringency_weekly <- aggregate(StringencyIndex~End_of_Week+CountryName, FUN=mean, data=data, na.rm=TRUE)
-ReproductionRate_weekly <- aggregate(ReproductionRate~End_of_Week+CountryName, FUN=mean, data=data, na.rm=TRUE)
+Stringency_weekly <- aggregate(StringencyIndex~End_of_Week+CountryName, 
+                               FUN=mean, 
+                               data=data, 
+                               na.rm=TRUE)
+ReproductionRate_weekly <- aggregate(ReproductionRate~End_of_Week+CountryName, 
+                                     FUN=mean, 
+                                     data=data, 
+                                     na.rm=TRUE)
 
 # merge weekly data
 data_weekly <- Stringency_weekly %>%
@@ -157,20 +216,31 @@ Spain <- data_weekly %>%
 
 ```{r ts, appendix = TRUE}
 # Convert to Time Series Objects
-France.ts <- ts(France[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Germany.ts <- ts(Germany[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Italy.ts <- ts(Italy[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Spain.ts <- ts(Spain[,c("S", "R")], freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
+France.ts <- ts(France[,c("S", "R")], 
+                freq=365.25/7, 
+                start=decimal_date(ymd("2020-03-07")))
+Germany.ts <- ts(Germany[,c("S", "R")], 
+                 freq=365.25/7, 
+                 start=decimal_date(ymd("2020-03-07")))
+Italy.ts <- ts(Italy[,c("S", "R")], 
+               freq=365.25/7, 
+               start=decimal_date(ymd("2020-03-07")))
+Spain.ts <- ts(Spain[,c("S", "R")], 
+               freq=365.25/7, 
+               start=decimal_date(ymd("2020-03-07")))
 
 ```
 
 # Analysis
 In the following, we will approach our final models by looking at the arbitrarily chosen example of France. On first sight, the time series for the time-varying reproduction rate and the stringency index could be correlated. The reproduction rate is high when the stringency is low and vice versa. Also, they do not show a clear linear trend or seasonality for this time frame, while they do, however, show strong persistence, where one observation depends on one or more of its predecessors.
 
-```{r cor, fig.height=6, fig.width=6, appendix = TRUE}
+```{r cor, fig.height=6, fig.width=6, fig.cap = "Time Series for France", appendix = TRUE}
 # Plot Time Series for France
 par(mfrow = c(2,1), cex = 0.8, mar = c(2, 4, 2, 4), oma = c(2, 2, 2, 2))
-plot(France.ts[,"R"], ylab="Reproduction Rate", main = "Time Series for Reproduction Rate and Stringency Index in France", cex.main = 0.9)
+plot(France.ts[,"R"], 
+     ylab="Reproduction Rate", 
+     main = "Time Series for Reproduction Rate and Stringency Index in France", 
+     cex.main = 0.9)
 plot(France.ts[,"S"], ylab="Stringency Index")
 
 ```
@@ -181,7 +251,7 @@ While our time series already fulfill the first two of these characteristics, th
 
 First off, we can make a visual assessment of correlation between the time series and its lags. As we can see, there is strong correlation between e.g. the reproduction rate and its first lag, while already for the second lag this correlation is less strong.
 
-```{r fig.height=6, fig.width=6, appendix = TRUE}
+```{r fig.height=6, fig.width=6, fig.cap = "Autocorrelation Scatter Plot for Reproduction Rate for France", appendix = TRUE}
 # Scatter Plot on Autocorrelation for Reproduction Rate in France
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 2, 4), oma = c(2, 2, 2, 2))
 
@@ -205,31 +275,41 @@ abline(h=mean(rrL2$RL2, na.rm=TRUE), lty=2)
 
 One handy method to check autocorrelation for many lags is via a correlogram which shows the autocorrelation function. In the following plots we can see that the reproduction rate is significantly correlated to up to three lags and the stringency index is significantly correlated for even more lags.
 
-```{r fig.height=6, fig.width=6, appendix = TRUE}
+```{r fig.height=6, fig.width=6, fig.cap = "Correlogram for Time Series for France", appendix = TRUE}
 # Plot Autocorrelation Function for Reproduction Rate and Stringency Index for France
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
-acf(France.ts[1:nrow(France.ts), "R"], main = "Autocorrelation for Reproduction Rate for France", cex.main = 0.9)
-acf(France.ts[1:nrow(France.ts), "S"], main = "Autocorrelation for Stringency Index for France")
+acf(France.ts[1:nrow(France.ts), "R"], 
+    main = "Autocorrelation for Reproduction Rate for France", 
+    cex.main = 0.9)
+acf(France.ts[1:nrow(France.ts), "S"], 
+    main = "Autocorrelation for Stringency Index for France")
 
 ```
 
 One way to approach stationarity when dealing with a random walk is to take the _first difference_ of the time series. The interpretation changes accordingly, meaning that we would now estimate effects in terms of the _changes_ in the time series. The resulting time series would be as follows.
 
-```{r diff, fig.height=6, fig.width=6, appendix = TRUE}
+```{r diff, fig.height=6, fig.width=6, fig.cap = "First Difference of Time Series for France", appendix = TRUE}
 # Plot First Difference of Time Series for France
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
-plot(diff(France.ts[,"R"]), main = "First difference of Reproduction Rate for France", ylab = "diff(Reproduction Rate)")
-plot(diff(France.ts[,"S"]), main ="First difference of Stringency Index for France", ylab = "diff(Stringency Index)")
+plot(diff(France.ts[,"R"]), 
+     main = "First difference of Reproduction Rate for France", 
+     ylab = "diff(Reproduction Rate)")
+plot(diff(France.ts[,"S"]), 
+     main ="First difference of Stringency Index for France", 
+     ylab = "diff(Stringency Index)")
 
 ```
 
 Again, we can reliably check, whether we have gotten rid of the autocorrelation in the data by plotting the autocorrelation function.
 
-```{r fig.height=6, fig.width=6, appendix = TRUE}
+```{r fig.height=6, fig.width=6, fig.cap = "Correlogram of First Difference of Time Series for France", appendix = TRUE}
 # Plot Autocorrelation Function for Differenced Time Series
 par(mfrow = c(2,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
-acf(diff(France.ts[1:nrow(France.ts), "R"]), main = "Autocorrelation for First Difference of Reproduction Rate for France", cex.main = 0.9)
-acf(diff(France.ts[1:nrow(France.ts), "S"]), main = "Autocorrelation for First Difference of Stringency Index for France")
+acf(diff(France.ts[1:nrow(France.ts), "R"]), 
+    main = "Autocorrelation for First Difference of Reproduction Rate for France", 
+    cex.main = 0.9)
+acf(diff(France.ts[1:nrow(France.ts), "S"]), 
+    main = "Autocorrelation for First Difference of Stringency Index for France")
 
 ```
 
@@ -245,153 +325,288 @@ The challenge then, is to choose the right lengths of these lags. Here, "some de
 # Specify the Models
 
 # France
-ARDL101000France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=France.ts)
-ARDL100100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=France.ts)
-ARDL100010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=France.ts)
-ARDL100001France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), data=France.ts)
-ARDL101100France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), data=France.ts)
-ARDL101010France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2), data=France.ts)
-ARDL101001France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), data=France.ts)
-ARDL100110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), data=France.ts)
-ARDL100101France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), data=France.ts)
-ARDL100011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), data=France.ts)
-ARDL101110France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2), data=France.ts)
-ARDL101011France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), data=France.ts)
-ARDL100111France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), data=France.ts)
-ARDL101111France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3), data=France.ts)
-ARDL111000France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), data=France.ts)
-ARDL110100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), data=France.ts)
-ARDL110010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), data=France.ts)
-ARDL110001France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), data=France.ts)
-ARDL111100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)), data=France.ts)
-ARDL111010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), data=France.ts)
-ARDL111001France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), data=France.ts)
-ARDL110110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2), data=France.ts)
-ARDL110101France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), data=France.ts)
-ARDL110011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), data=France.ts)
-ARDL111110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), data=France.ts)
-ARDL111011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=France.ts)
-ARDL111111France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=France.ts)
+ARDL101000France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), 
+                              data=France.ts)
+ARDL100100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), 
+                              data=France.ts)
+ARDL100010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), 
+                              data=France.ts)
+ARDL100001France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), 
+                              data=France.ts)
+ARDL101100France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), 
+                              data=France.ts)
+ARDL101010France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2), 
+                              data=France.ts)
+ARDL101001France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), 
+                              data=France.ts)
+ARDL100110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), 
+                              data=France.ts)
+ARDL100101France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), 
+                              data=France.ts)
+ARDL100011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), 
+                              data=France.ts)
+ARDL101110France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2),
+                              data=France.ts)
+ARDL101011France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), 
+                              data=France.ts)
+ARDL100111France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), 
+                              data=France.ts)
+ARDL101111France.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3), 
+                              data=France.ts)
+ARDL111000France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), 
+                              data=France.ts)
+ARDL110100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), 
+                              data=France.ts)
+ARDL110010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), 
+                              data=France.ts)
+ARDL110001France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), 
+                              data=France.ts)
+ARDL111100France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)),
+                              data=France.ts)
+ARDL111010France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), 
+                              data=France.ts)
+ARDL111001France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), 
+                              data=France.ts)
+ARDL110110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2), 
+                              data=France.ts)
+ARDL110101France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), 
+                              data=France.ts)
+ARDL110011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), 
+                              data=France.ts)
+ARDL111110France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), 
+                              data=France.ts)
+ARDL111011France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3),
+                              data=France.ts)
+ARDL111111France.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3),
+                              data=France.ts)
 
 # Germany
-ARDL101000Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=Germany.ts)
-ARDL100100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=Germany.ts)
-ARDL100010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=Germany.ts)
-ARDL100001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), data=Germany.ts)
-ARDL101100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), data=Germany.ts)
-ARDL101010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2), data=Germany.ts)
-ARDL101001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), data=Germany.ts)
-ARDL100110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), data=Germany.ts)
-ARDL100101Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), data=Germany.ts)
-ARDL100011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), data=Germany.ts)
-ARDL101110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2), data=Germany.ts)
-ARDL101011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), data=Germany.ts)
-ARDL100111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), data=Germany.ts)
-ARDL101111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3), data=Germany.ts)
-ARDL111000Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), data=Germany.ts)
-ARDL110100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), data=Germany.ts)
-ARDL110010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), data=Germany.ts)
-ARDL110001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), data=Germany.ts)
-ARDL111100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)), data=Germany.ts)
-ARDL111010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), data=Germany.ts)
-ARDL111001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), data=Germany.ts)
-ARDL110110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2), data=Germany.ts)
-ARDL110101Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), data=Germany.ts)
-ARDL110011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), data=Germany.ts)
-ARDL111110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), data=Germany.ts)
-ARDL111011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=Germany.ts)
-ARDL111111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=Germany.ts)
+ARDL101000Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), 
+                               data=Germany.ts)
+ARDL100100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), 
+                               data=Germany.ts)
+ARDL100010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL100001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL101100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), 
+                               data=Germany.ts)
+ARDL101010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL101001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL100110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL100101Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL100011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL101110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2),
+                               data=Germany.ts)
+ARDL101011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL100111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL101111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL111000Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), 
+                               data=Germany.ts)
+ARDL110100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), 
+                               data=Germany.ts)
+ARDL110010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL110001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL111100Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)), 
+                               data=Germany.ts)
+ARDL111010Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL111001Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL110110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL110101Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL110011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL111110Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), 
+                               data=Germany.ts)
+ARDL111011Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
+ARDL111111Germany.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), 
+                               data=Germany.ts)
 
 # Italy
-ARDL101000Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=Italy.ts)
-ARDL100100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=Italy.ts)
-ARDL100010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=Italy.ts)
-ARDL100001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), data=Italy.ts)
-ARDL101100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), data=Italy.ts)
-ARDL101010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2), data=Italy.ts)
-ARDL101001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), data=Italy.ts)
-ARDL100110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), data=Italy.ts)
-ARDL100101Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), data=Italy.ts)
-ARDL100011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), data=Italy.ts)
-ARDL101110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2), data=Italy.ts)
-ARDL101011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), data=Italy.ts)
-ARDL100111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), data=Italy.ts)
-ARDL101111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3), data=Italy.ts)
-ARDL111000Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), data=Italy.ts)
-ARDL110100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), data=Italy.ts)
-ARDL110010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), data=Italy.ts)
-ARDL110001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), data=Italy.ts)
-ARDL111100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)), data=Italy.ts)
-ARDL111010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), data=Italy.ts)
-ARDL111001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), data=Italy.ts)
-ARDL110110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2), data=Italy.ts)
-ARDL110101Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), data=Italy.ts)
-ARDL110011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), data=Italy.ts)
-ARDL111110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), data=Italy.ts)
-ARDL111011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=Italy.ts)
-ARDL111111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=Italy.ts)
+ARDL101000Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), 
+                             data=Italy.ts)
+ARDL100100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), 
+                             data=Italy.ts)
+ARDL100010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2),
+                             data=Italy.ts)
+ARDL100001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), 
+                             data=Italy.ts)
+ARDL101100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), 
+                             data=Italy.ts)
+ARDL101010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2),
+                             data=Italy.ts)
+ARDL101001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3),
+                             data=Italy.ts)
+ARDL100110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), 
+                             data=Italy.ts)
+ARDL100101Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), 
+                             data=Italy.ts)
+ARDL100011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), 
+                             data=Italy.ts)
+ARDL101110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2),
+                             data=Italy.ts)
+ARDL101011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3),
+                             data=Italy.ts)
+ARDL100111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3),
+                             data=Italy.ts)
+ARDL101111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3),
+                             data=Italy.ts)
+ARDL111000Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), 
+                             data=Italy.ts)
+ARDL110100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), 
+                             data=Italy.ts)
+ARDL110010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2),
+                             data=Italy.ts)
+ARDL110001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), 
+                             data=Italy.ts)
+ARDL111100Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)), 
+                             data=Italy.ts)
+ARDL111010Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), 
+                             data=Italy.ts)
+ARDL111001Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), 
+                             data=Italy.ts)
+ARDL110110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2),
+                             data=Italy.ts)
+ARDL110101Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3),
+                             data=Italy.ts)
+ARDL110011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3),
+                             data=Italy.ts)
+ARDL111110Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), 
+                             data=Italy.ts)
+ARDL111011Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), 
+                             data=Italy.ts)
+ARDL111111Italy.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3),
+                             data=Italy.ts)
 
 # Spain
-ARDL101000Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), data=Spain.ts)
-ARDL100100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), data=Spain.ts)
-ARDL100010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2), data=Spain.ts)
-ARDL100001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), data=Spain.ts)
-ARDL101100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)), data=Spain.ts)
-ARDL101010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2), data=Spain.ts)
-ARDL101001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), data=Spain.ts)
-ARDL100110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2), data=Spain.ts)
-ARDL100101Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), data=Spain.ts)
-ARDL100011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3), data=Spain.ts)
-ARDL101110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2), data=Spain.ts)
-ARDL101011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), data=Spain.ts)
-ARDL100111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), data=Spain.ts)
-ARDL101111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3), data=Spain.ts)
-ARDL111000Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), data=Spain.ts)
-ARDL110100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), data=Spain.ts)
-ARDL110010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), data=Spain.ts)
-ARDL110001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), data=Spain.ts)
-ARDL111100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)), data=Spain.ts)
-ARDL111010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), data=Spain.ts)
-ARDL111001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), data=Spain.ts)
-ARDL110110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2), data=Spain.ts)
-ARDL110101Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), data=Spain.ts)
-ARDL110011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), data=Spain.ts)
-ARDL111110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), data=Spain.ts)
-ARDL111011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), data=Spain.ts)
-ARDL111111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3), data=Spain.ts)
+ARDL101000Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S), 
+                             data=Spain.ts)
+ARDL100100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)), 
+                             data=Spain.ts)
+ARDL100010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2),
+                             data=Spain.ts)
+ARDL100001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL101100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)),
+                             data=Spain.ts)
+ARDL101010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2),
+                             data=Spain.ts)
+ARDL101001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL100110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),2),
+                             data=Spain.ts)
+ARDL100101Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S)) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL100011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(S),2) + L(d(S),3),
+                             data=Spain.ts)
+ARDL101110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S)) + L(d(S),2), 
+                             data=Spain.ts)
+ARDL101011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + L(d(S),2) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL100111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S), 1) + L(d(S),2) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL101111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + d(S) + + L(d(S)) + L(d(S),2) + L(d(S),3),
+                             data=Spain.ts)
+ARDL111000Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S), 
+                             data=Spain.ts)
+ARDL110100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)), 
+                             data=Spain.ts)
+ARDL110010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2), 
+                             data=Spain.ts)
+ARDL110001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL111100Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)),
+                             data=Spain.ts)
+ARDL111010Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2), 
+                             data=Spain.ts)
+ARDL111001Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL110110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),2),
+                             data=Spain.ts)
+ARDL110101Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S)) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL110011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + L(d(S),2) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL111110Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2), 
+                             data=Spain.ts)
+ARDL111011Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S),2) + L(d(S),3), 
+                             data=Spain.ts)
+ARDL111111Spain.dyn <- dynlm(d(R) ~ L(d(R)) + L(d(R),2) + d(S) + L(d(S)) + L(d(S),2) + L(d(S),3),
+                             data=Spain.ts)
 
 ```
 
 ```{r eval=FALSE, appendix=TRUE}
 # Getting Test Statistics for Models
 # France
-glARDL101000France.dyn <- glance(ARDL101000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100France.dyn <- glance(ARDL100100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010France.dyn <- glance(ARDL100010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001France.dyn <- glance(ARDL100001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100France.dyn <- glance(ARDL101100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010France.dyn <- glance(ARDL101010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001France.dyn <- glance(ARDL101001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110France.dyn <- glance(ARDL100110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101France.dyn <- glance(ARDL100101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011France.dyn <- glance(ARDL100011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110France.dyn <- glance(ARDL101110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011France.dyn <- glance(ARDL101011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111France.dyn <- glance(ARDL100111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111France.dyn <- glance(ARDL101111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000France.dyn <- glance(ARDL111000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100France.dyn <- glance(ARDL110100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010France.dyn <- glance(ARDL110010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001France.dyn <- glance(ARDL110001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100France.dyn <- glance(ARDL111100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010France.dyn <- glance(ARDL111010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001France.dyn <- glance(ARDL111001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110France.dyn <- glance(ARDL110110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101France.dyn <- glance(ARDL110101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011France.dyn <- glance(ARDL110011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110France.dyn <- glance(ARDL111110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011France.dyn <- glance(ARDL111011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111France.dyn <- glance(ARDL111111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000France.dyn <- 
+  glance(ARDL101000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100France.dyn <- 
+  glance(ARDL100100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010France.dyn <- 
+  glance(ARDL100010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001France.dyn <- 
+  glance(ARDL100001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100France.dyn <- 
+  glance(ARDL101100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010France.dyn <- 
+  glance(ARDL101010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001France.dyn <- 
+  glance(ARDL101001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110France.dyn <- 
+  glance(ARDL100110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101France.dyn <- 
+  glance(ARDL100101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011France.dyn <- 
+  glance(ARDL100011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110France.dyn <- 
+  glance(ARDL101110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011France.dyn <- 
+  glance(ARDL101011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111France.dyn <- 
+  glance(ARDL100111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111France.dyn <- 
+  glance(ARDL101111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000France.dyn <- 
+  glance(ARDL111000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100France.dyn <- 
+  glance(ARDL110100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010France.dyn <- 
+  glance(ARDL110010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001France.dyn <- 
+  glance(ARDL110001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100France.dyn <- 
+  glance(ARDL111100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010France.dyn <- 
+  glance(ARDL111010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001France.dyn <- 
+  glance(ARDL111001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110France.dyn <- 
+  glance(ARDL110110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101France.dyn <- 
+  glance(ARDL110101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011France.dyn <- 
+  glance(ARDL110011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110France.dyn <- 
+  glance(ARDL111110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011France.dyn <- 
+  glance(ARDL111011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111France.dyn <- 
+  glance(ARDL111111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_France <- rbind(as.numeric(glARDL101000France.dyn), 
@@ -455,38 +670,65 @@ tabl_France <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_France) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_France %>%
-  kbl(caption="Goodness-of-fit statistics for `France` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `France` models", longtable=T) %>%
   kable_styling() %>%
   row_spec(5, background = "yellow")
 
 # Germany
-glARDL101000Germany.dyn <- glance(ARDL101000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100Germany.dyn <- glance(ARDL100100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010Germany.dyn <- glance(ARDL100010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001Germany.dyn <- glance(ARDL100001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100Germany.dyn <- glance(ARDL101100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010Germany.dyn <- glance(ARDL101010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001Germany.dyn <- glance(ARDL101001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110Germany.dyn <- glance(ARDL100110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101Germany.dyn <- glance(ARDL100101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011Germany.dyn <- glance(ARDL100011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110Germany.dyn <- glance(ARDL101110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011Germany.dyn <- glance(ARDL101011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111Germany.dyn <- glance(ARDL100111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111Germany.dyn <- glance(ARDL101111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000Germany.dyn <- glance(ARDL111000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100Germany.dyn <- glance(ARDL110100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010Germany.dyn <- glance(ARDL110010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001Germany.dyn <- glance(ARDL110001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100Germany.dyn <- glance(ARDL111100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010Germany.dyn <- glance(ARDL111010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001Germany.dyn <- glance(ARDL111001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110Germany.dyn <- glance(ARDL110110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101Germany.dyn <- glance(ARDL110101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011Germany.dyn <- glance(ARDL110011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110Germany.dyn <- glance(ARDL111110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011Germany.dyn <- glance(ARDL111011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111Germany.dyn <- glance(ARDL111111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000Germany.dyn <- 
+  glance(ARDL101000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100Germany.dyn <- 
+  glance(ARDL100100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010Germany.dyn <- 
+  glance(ARDL100010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001Germany.dyn <- 
+  glance(ARDL100001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100Germany.dyn <- 
+  glance(ARDL101100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010Germany.dyn <- 
+  glance(ARDL101010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001Germany.dyn <- 
+  glance(ARDL101001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110Germany.dyn <- 
+  glance(ARDL100110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101Germany.dyn <- 
+  glance(ARDL100101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011Germany.dyn <- 
+  glance(ARDL100011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110Germany.dyn <- 
+  glance(ARDL101110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011Germany.dyn <- 
+  glance(ARDL101011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111Germany.dyn <- 
+  glance(ARDL100111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111Germany.dyn <- 
+  glance(ARDL101111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000Germany.dyn <- 
+  glance(ARDL111000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100Germany.dyn <- 
+  glance(ARDL110100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010Germany.dyn <- 
+  glance(ARDL110010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001Germany.dyn <- 
+  glance(ARDL110001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100Germany.dyn <- 
+  glance(ARDL111100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010Germany.dyn <- 
+  glance(ARDL111010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001Germany.dyn <- 
+  glance(ARDL111001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110Germany.dyn <- 
+  glance(ARDL110110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101Germany.dyn <- 
+  glance(ARDL110101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011Germany.dyn <- 
+  glance(ARDL110011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110Germany.dyn <- 
+  glance(ARDL111110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011Germany.dyn <- 
+  glance(ARDL111011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111Germany.dyn <- 
+  glance(ARDL111111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_Germany <- rbind(as.numeric(glARDL101000Germany.dyn), 
@@ -550,38 +792,65 @@ tabl_Germany <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_Germany) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_Germany %>%
-  kbl(caption="Goodness-of-fit statistics for `Germany` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `Germany` models", longtable=T) %>%
   kable_styling() %>%
   row_spec(5, background = "yellow")
 
 # Italy
-glARDL101000Italy.dyn <- glance(ARDL101000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100Italy.dyn <- glance(ARDL100100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010Italy.dyn <- glance(ARDL100010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001Italy.dyn <- glance(ARDL100001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100Italy.dyn <- glance(ARDL101100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010Italy.dyn <- glance(ARDL101010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001Italy.dyn <- glance(ARDL101001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110Italy.dyn <- glance(ARDL100110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101Italy.dyn <- glance(ARDL100101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011Italy.dyn <- glance(ARDL100011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110Italy.dyn <- glance(ARDL101110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011Italy.dyn <- glance(ARDL101011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111Italy.dyn <- glance(ARDL100111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111Italy.dyn <- glance(ARDL101111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000Italy.dyn <- glance(ARDL111000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100Italy.dyn <- glance(ARDL110100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010Italy.dyn <- glance(ARDL110010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001Italy.dyn <- glance(ARDL110001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100Italy.dyn <- glance(ARDL111100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010Italy.dyn <- glance(ARDL111010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001Italy.dyn <- glance(ARDL111001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110Italy.dyn <- glance(ARDL110110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101Italy.dyn <- glance(ARDL110101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011Italy.dyn <- glance(ARDL110011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110Italy.dyn <- glance(ARDL111110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011Italy.dyn <- glance(ARDL111011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111Italy.dyn <- glance(ARDL111111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000Italy.dyn <- 
+  glance(ARDL101000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100Italy.dyn <- 
+  glance(ARDL100100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010Italy.dyn <- 
+  glance(ARDL100010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001Italy.dyn <- 
+  glance(ARDL100001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100Italy.dyn <- 
+  glance(ARDL101100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010Italy.dyn <- 
+  glance(ARDL101010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001Italy.dyn <- 
+  glance(ARDL101001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110Italy.dyn <- 
+  glance(ARDL100110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101Italy.dyn <- 
+  glance(ARDL100101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011Italy.dyn <- 
+  glance(ARDL100011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110Italy.dyn <- 
+  glance(ARDL101110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011Italy.dyn <- 
+  glance(ARDL101011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111Italy.dyn <- 
+  glance(ARDL100111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111Italy.dyn <- 
+  glance(ARDL101111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000Italy.dyn <- 
+  glance(ARDL111000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100Italy.dyn <- 
+  glance(ARDL110100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010Italy.dyn <- 
+  glance(ARDL110010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001Italy.dyn <- 
+  glance(ARDL110001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100Italy.dyn <- 
+  glance(ARDL111100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010Italy.dyn <- 
+  glance(ARDL111010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001Italy.dyn <- 
+  glance(ARDL111001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110Italy.dyn <- 
+  glance(ARDL110110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101Italy.dyn <- 
+  glance(ARDL110101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011Italy.dyn <- 
+  glance(ARDL110011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110Italy.dyn <- 
+  glance(ARDL111110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011Italy.dyn <- 
+  glance(ARDL111011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111Italy.dyn <- 
+  glance(ARDL111111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_Italy <- rbind(as.numeric(glARDL101000Italy.dyn), 
@@ -645,38 +914,65 @@ tabl_Italy <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_Italy) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_Italy %>%
-  kbl(caption="Goodness-of-fit statistics for `Italy` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `Italy` models", longtable=T) %>%
   kable_styling() %>%
   row_spec(2, background = "yellow")
 
 # Spain
-glARDL101000Spain.dyn <- glance(ARDL101000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100Spain.dyn <- glance(ARDL100100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010Spain.dyn <- glance(ARDL100010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001Spain.dyn <- glance(ARDL100001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100Spain.dyn <- glance(ARDL101100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010Spain.dyn <- glance(ARDL101010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001Spain.dyn <- glance(ARDL101001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110Spain.dyn <- glance(ARDL100110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101Spain.dyn <- glance(ARDL100101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011Spain.dyn <- glance(ARDL100011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110Spain.dyn <- glance(ARDL101110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011Spain.dyn <- glance(ARDL101011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111Spain.dyn <- glance(ARDL100111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111Spain.dyn <- glance(ARDL101111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000Spain.dyn <- glance(ARDL111000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100Spain.dyn <- glance(ARDL110100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010Spain.dyn <- glance(ARDL110010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001Spain.dyn <- glance(ARDL110001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100Spain.dyn <- glance(ARDL111100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010Spain.dyn <- glance(ARDL111010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001Spain.dyn <- glance(ARDL111001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110Spain.dyn <- glance(ARDL110110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101Spain.dyn <- glance(ARDL110101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011Spain.dyn <- glance(ARDL110011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110Spain.dyn <- glance(ARDL111110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011Spain.dyn <- glance(ARDL111011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111Spain.dyn <- glance(ARDL111111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000Spain.dyn <- 
+  glance(ARDL101000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100Spain.dyn <- 
+  glance(ARDL100100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010Spain.dyn <- 
+  glance(ARDL100010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001Spain.dyn <- 
+  glance(ARDL100001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100Spain.dyn <- 
+  glance(ARDL101100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010Spain.dyn <- 
+  glance(ARDL101010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001Spain.dyn <- 
+  glance(ARDL101001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110Spain.dyn <- 
+  glance(ARDL100110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101Spain.dyn <- 
+  glance(ARDL100101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011Spain.dyn <- 
+  glance(ARDL100011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110Spain.dyn <- 
+  glance(ARDL101110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011Spain.dyn <- 
+  glance(ARDL101011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111Spain.dyn <- 
+  glance(ARDL100111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111Spain.dyn <- 
+  glance(ARDL101111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000Spain.dyn <- 
+  glance(ARDL111000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100Spain.dyn <- 
+  glance(ARDL110100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010Spain.dyn <- 
+  glance(ARDL110010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001Spain.dyn <- 
+  glance(ARDL110001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100Spain.dyn <- 
+  glance(ARDL111100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010Spain.dyn <- 
+  glance(ARDL111010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001Spain.dyn <- 
+  glance(ARDL111001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110Spain.dyn <- 
+  glance(ARDL110110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101Spain.dyn <- 
+  glance(ARDL110101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011Spain.dyn <- 
+  glance(ARDL110011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110Spain.dyn <- 
+  glance(ARDL111110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011Spain.dyn <- 
+  glance(ARDL111011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111Spain.dyn <- 
+  glance(ARDL111111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_Spain <- rbind(as.numeric(glARDL101000Spain.dyn), 
@@ -740,7 +1036,7 @@ tabl_Spain <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_Spain) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_Spain %>%
-  kbl(caption="Goodness-of-fit statistics for `Spain` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `Spain` models", longtable=T) %>%
   kable_styling() %>%
   row_spec(8, background = "yellow")
 
@@ -773,13 +1069,17 @@ Because none of the best performing models include a lag 2 of the dependent vari
 
 We can also use the correlogram to check whether the ordinary least squares assumption that observations of the error term are uncorrelated with each other is violated in our models. As we can see below, this is not the case.
 
-```{r fig.height=12, fig.width=6, appendix = TRUE}
+```{r fig.height=9, fig.width=6, fig.cap = "Model Residuals Correlogram", appendix = TRUE}
 # Plot Autocorrelation Function for Model Residuals
 par(mfrow = c(4,1), cex = 0.8, mar = c(4, 4, 4, 4), oma = c(2, 2, 2, 2))
-acf(as.numeric(resid(ARDL101100France.dyn)), main = "Autocorrelation of Error Term for France ARDL(1,0;1,1,0) Model")
-acf(as.numeric(resid(ARDL101100Germany.dyn)), main = "Autocorrelation of Error Term for Germany ARDL(1,0;1,1,0) Model")
-acf(as.numeric(resid(ARDL100100Italy.dyn)), main = "Autocorrelation of Error Term for Italy ARDL(1,0;0,1,0) Model")
-acf(as.numeric(resid(ARDL100110Spain.dyn)), main = "Autocorrelation of Error Term for Spain ARDL(1,0;0,1,1) Model")
+acf(as.numeric(resid(ARDL101100France.dyn)), 
+    main = "Autocorrelation of Error Term for France ARDL(1,0;1,1,0) Model")
+acf(as.numeric(resid(ARDL101100Germany.dyn)), 
+    main = "Autocorrelation of Error Term for Germany ARDL(1,0;1,1,0) Model")
+acf(as.numeric(resid(ARDL100100Italy.dyn)), 
+    main = "Autocorrelation of Error Term for Italy ARDL(1,0;0,1,0) Model")
+acf(as.numeric(resid(ARDL100110Spain.dyn)), 
+    main = "Autocorrelation of Error Term for Spain ARDL(1,0;0,1,1) Model")
 
 ```
 
@@ -790,27 +1090,47 @@ The following regression tables show the results for the models we have chosen t
 
 # France
 res_France <- tidy(summary(ARDL101100France.dyn))
-colnames(res_France) <- c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
+colnames(res_France) <- 
+  c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
 
-res_France %>% kbl(digits = 4, caption="Goodness-of-fit statistics for France ARDL(1,0;1,1,0,0) model") %>% kable_styling()
+res_France %>% 
+  kbl(digits = 4, 
+      caption="Regression results for France ARDL(1,0;1,1,0,0) model", 
+      longtable=T) %>% 
+  kable_styling()
 
 # Germany
 res_Germany <- tidy(summary(ARDL101100Germany.dyn))
-colnames(res_Germany) <- c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
+colnames(res_Germany) <- 
+  c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
 
-res_Germany %>% kbl(digits = 4, caption="Goodness-of-fit statistics for Germany ARDL(1,0;1,1,0,0) model") %>% kable_styling()
+res_Germany %>% 
+  kbl(digits = 4, 
+      caption="Regression results for Germany ARDL(1,0;1,1,0,0) model",
+      longtable=T) %>% 
+  kable_styling()
 
 # Italy
 res_Italy <- tidy(summary(ARDL100100Italy.dyn))
-colnames(res_Italy) <- c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
+colnames(res_Italy) <- 
+  c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
 
-res_Italy %>% kbl(digits = 4, caption="Goodness-of-fit statistics for Italy ARDL(1,0;0,1,0,0) model") %>% kable_styling()
+res_Italy %>% 
+  kbl(digits = 4, 
+      caption="Regression results for Italy ARDL(1,0;0,1,0,0) model",
+      longtable=T) %>% 
+  kable_styling()
 
 # Spain
 res_Spain <- tidy(summary(ARDL100110Spain.dyn))
-colnames(res_Spain) <- c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
+colnames(res_Spain) <- 
+  c("Term", "Estimate", "Std. Error", "Test statistic", "p-value")
 
-res_Spain %>% kbl(digits = 4, caption="Goodness-of-fit statistics for Spain ARDL(1,0;0,1,1,0) model") %>% kable_styling()
+res_Spain %>% 
+  kbl(digits = 4, 
+      caption="Regression results for Spain ARDL(1,0;0,1,1,0) model",
+      longtable=T) %>% 
+  kable_styling()
 
 ```
 
@@ -828,87 +1148,197 @@ Although not a very robust measure, because the differences in model fit were sm
 
 Last, but not least, and perhaps a more unconventional way to obtain model results, we can look at the model residuals.
 
-```{r message=FALSE, warning=FALSE, fig.height=10, fig.width=6, appendix = TRUE}
+```{r message=FALSE, warning=FALSE, fig.height=9, fig.width=6, fig.cap = "Model Residuals Plot", appendix = TRUE}
 # Plot Model Residuals
-France_res.ts <- ts(resid(ARDL101100France.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Germany_res.ts <- ts(resid(ARDL101100Germany.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Italy_res.ts <- ts(resid(ARDL100100Italy.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Spain_res.ts <- ts(resid(ARDL100110Spain.dyn), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
+France_res.ts <- ts(resid(ARDL101100France.dyn), 
+                    freq=365.25/7, 
+                    start=decimal_date(ymd("2020-03-07")))
+Germany_res.ts <- ts(resid(ARDL101100Germany.dyn), 
+                     freq=365.25/7, 
+                     start=decimal_date(ymd("2020-03-07")))
+Italy_res.ts <- ts(resid(ARDL100100Italy.dyn), 
+                   freq=365.25/7, 
+                   start=decimal_date(ymd("2020-03-07")))
+Spain_res.ts <- ts(resid(ARDL100110Spain.dyn), 
+                   freq=365.25/7, 
+                   start=decimal_date(ymd("2020-03-07")))
 
 res.ts <- ts.union(France_res.ts, Germany_res.ts, Italy_res.ts, Spain_res.ts)
 
 par(mfrow = c(2,1), cex = 0.8)
 
-ts.plot(res.ts, plot.type="single", col = 1:ncol(res.ts), main = "Model Residuals")
-legend("topright", c("France", "Germany", "Italy", "Spain"), col=1:ncol(res.ts), lty=1, cex=.65)
+ts.plot(res.ts, 
+        plot.type="single", 
+        col = 1:ncol(res.ts), 
+        main = "Model Residuals")
+legend("topright", 
+       c("France", "Germany", "Italy", "Spain"), 
+       col=1:ncol(res.ts), 
+       lty=1, 
+       cex=.65)
 
 # Plot Rolling Variance of Model Residuals
-France_var.ts <- ts(roll_var(resid(ARDL101100France.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Germany_var.ts <- ts(roll_var(resid(ARDL101100Germany.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Italy_var.ts <- ts(roll_var(resid(ARDL100100Italy.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
-Spain_var.ts <- ts(roll_var(resid(ARDL100110Spain.dyn), width = 4), freq=365.25/7, start=decimal_date(ymd("2020-03-07")))
+France_var.ts <- ts(roll_var(resid(ARDL101100France.dyn), width = 4), 
+                    freq=365.25/7, 
+                    start=decimal_date(ymd("2020-03-07")))
+Germany_var.ts <- ts(roll_var(resid(ARDL101100Germany.dyn), width = 4), 
+                     freq=365.25/7, 
+                     start=decimal_date(ymd("2020-03-07")))
+Italy_var.ts <- ts(roll_var(resid(ARDL100100Italy.dyn), width = 4), 
+                   freq=365.25/7, 
+                   start=decimal_date(ymd("2020-03-07")))
+Spain_var.ts <- ts(roll_var(resid(ARDL100110Spain.dyn), width = 4), 
+                   freq=365.25/7, 
+                   start=decimal_date(ymd("2020-03-07")))
 
 roll_var.ts <- ts.union(France_var.ts, Germany_var.ts, Italy_var.ts, Spain_var.ts)
 
-ts.plot(roll_var.ts, plot.type="single", col = 1:ncol(roll_var.ts), main = "2-month Rolling Variance in Model Residuals")
-legend("topright", c("France", "Germany", "Italy", "Spain"), col=1:ncol(roll_var.ts), lty=1, cex=.65)
+ts.plot(roll_var.ts, 
+        plot.type="single", 
+        col = 1:ncol(roll_var.ts), 
+        main = "2-month Rolling Variance in Model Residuals")
+legend("topright", 
+       c("France", "Germany", "Italy", "Spain"), 
+       col=1:ncol(roll_var.ts), 
+       lty=1, 
+       cex=.65)
 
 ```
 
 While we see some heteroskedasticity in the model residuals, which we will discuss in the next section, we can also see that the rolling variance of the error term decreases over time for all of our models. Because we are assuming a linear relationship between changes in policy stringency and changes in the reproduction rate, the decreasing error means an increased coherence between the changes in policy stringency and changes in the reproduction rate within the observed countries. This means that in France, Germany, Italy and Spain, policies have become more effective over time in the sense that the chosen changes in policy stringency have more and more led to the expected changes in reproduction rate - over-shooting or underwhelming their goal less and less.
 
-## Discussion
+# Discussion
 In Germany and France the lag in policy stringency is even smaller than what we would expect telling from the incubation period of COVID-19. A possible reason for this is that in these countries already the media and political buildup to the announcement of more restrictive measures might have led to self-imposed restrictive behaviour in the population. [see e.g. @kauermannCODAGBerichtNr2021, p. 14] 
 
 Explaining the comparatively higher lags in Italy and Spain, and explaining the contradictory effect of higher policy stringency in the first week after its introduction in Spain should be the subject of a more in-depth case study. However, one study by Pulejo and Querubín, who researched "the extent to which political considerations have shaped public policy at the onset of the COVID-19 epidemic", suggests that "reelection concerns can play an important role in explaining [the] early variation in government responses, with particular regard to public health measures that can have immediate negative impact on the economy." [@pulejoElectoralConcernsReduce2021, p. 1] They find that "whenever the safeguard on public health is at odds with economic well-being, policymakers may decide to partially sacrifice the former for the latter".[@pulejoElectoralConcernsReduce2021, p. 2] Given the fact that Spain (15.4%) and Italy (10.7%) still have the highest unemployment quotas just behind Greece in the EU, with France (7.3%) being in the midfield and Germany (4.4%) having one of the lowest quotas [@EuUnemploymentRate2021], it seems plausible that in Spain and Italy, policy makers were balancing their decision more towards economic well-being than this was the case in France and Germany.
 
 Finally, in congruence with the differenced time series used in our analysis the model residuals show some heteroskedasticity. While the interpretation of our results should still hold, the existence of heteroskedasticity means we cannot realibly estimate the test statistics. For this purpose, we could either calculate heteroskedasticity and autocorrelation consistent standard errors using the Newey-West method, or we could fit an autoregressive conditional heteroskedasticity model. [@yoberoTimeSeriesRegression2017] Both these methods are however beyond the scope of this assignment.
 
-## Conclusion
+# Conclusion
 In this analysis we have tried to answer the question of how the epidemiological effectiveness of policy making with COVID-19-related, restrictive policies compares among France, Germany, Italy and Spain. We used the time-varying reproduction rate and the policy stringency index from the Oxford COVID-19 Government Response Tracker to show for each of these countries, how timely policy makers were able to lower the reproduction rate and how effectively they were able to lower the reproduction rate.
 
 While we suggested some possible avenues in explaining the differences among these countries, with the most promising coming from research that asks for non-epidemiological motivations in COVID-19-related policy making, further research could be a more qualitatively-oriented, comparative case study, that connects these findings to a more in-depth view of the succession of events in each country. Eventually, this might lead to insights not only on the most effective policies in tackling a pandemic like this one, but also on what factors lead to the effective implementation of these policies.
+
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` `
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` `
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `
+` `
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `   
+` ` 
+` `
 
 # Bibliography
 <div id="refs"></div>
 
 ` `   
 ` ` 
-` `   
-` ` 
+` `
 
 # Appendix
 ## Model Selection
 ```{r}
 # Getting Test Statistics for Models
 # France
-glARDL101000France.dyn <- glance(ARDL101000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100France.dyn <- glance(ARDL100100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010France.dyn <- glance(ARDL100010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001France.dyn <- glance(ARDL100001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100France.dyn <- glance(ARDL101100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010France.dyn <- glance(ARDL101010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001France.dyn <- glance(ARDL101001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110France.dyn <- glance(ARDL100110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101France.dyn <- glance(ARDL100101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011France.dyn <- glance(ARDL100011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110France.dyn <- glance(ARDL101110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011France.dyn <- glance(ARDL101011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111France.dyn <- glance(ARDL100111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111France.dyn <- glance(ARDL101111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000France.dyn <- glance(ARDL111000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100France.dyn <- glance(ARDL110100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010France.dyn <- glance(ARDL110010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001France.dyn <- glance(ARDL110001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100France.dyn <- glance(ARDL111100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010France.dyn <- glance(ARDL111010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001France.dyn <- glance(ARDL111001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110France.dyn <- glance(ARDL110110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101France.dyn <- glance(ARDL110101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011France.dyn <- glance(ARDL110011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110France.dyn <- glance(ARDL111110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011France.dyn <- glance(ARDL111011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111France.dyn <- glance(ARDL111111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000France.dyn <- 
+  glance(ARDL101000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100France.dyn <- 
+  glance(ARDL100100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010France.dyn <- 
+  glance(ARDL100010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001France.dyn <- 
+  glance(ARDL100001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100France.dyn <- 
+  glance(ARDL101100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010France.dyn <- 
+  glance(ARDL101010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001France.dyn <- 
+  glance(ARDL101001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110France.dyn <- 
+  glance(ARDL100110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101France.dyn <- 
+  glance(ARDL100101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011France.dyn <- 
+  glance(ARDL100011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110France.dyn <- 
+  glance(ARDL101110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011France.dyn <- 
+  glance(ARDL101011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111France.dyn <- 
+  glance(ARDL100111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111France.dyn <- 
+  glance(ARDL101111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000France.dyn <- 
+  glance(ARDL111000France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100France.dyn <- 
+  glance(ARDL110100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010France.dyn <- 
+  glance(ARDL110010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001France.dyn <- 
+  glance(ARDL110001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100France.dyn <- 
+  glance(ARDL111100France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010France.dyn <- 
+  glance(ARDL111010France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001France.dyn <- 
+  glance(ARDL111001France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110France.dyn <- 
+  glance(ARDL110110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101France.dyn <- 
+  glance(ARDL110101France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011France.dyn <- 
+  glance(ARDL110011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110France.dyn <- 
+  glance(ARDL111110France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011France.dyn <- 
+  glance(ARDL111011France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111France.dyn <- 
+  glance(ARDL111111France.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_France <- rbind(as.numeric(glARDL101000France.dyn), 
@@ -972,38 +1402,66 @@ tabl_France <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_France) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_France %>%
-  kbl(caption="Goodness-of-fit statistics for `France` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `France` models",
+      longtable=T) %>%
   kable_styling() %>%
   row_spec(5, background = "yellow")
 
 # Germany
-glARDL101000Germany.dyn <- glance(ARDL101000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100Germany.dyn <- glance(ARDL100100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010Germany.dyn <- glance(ARDL100010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001Germany.dyn <- glance(ARDL100001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100Germany.dyn <- glance(ARDL101100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010Germany.dyn <- glance(ARDL101010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001Germany.dyn <- glance(ARDL101001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110Germany.dyn <- glance(ARDL100110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101Germany.dyn <- glance(ARDL100101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011Germany.dyn <- glance(ARDL100011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110Germany.dyn <- glance(ARDL101110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011Germany.dyn <- glance(ARDL101011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111Germany.dyn <- glance(ARDL100111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111Germany.dyn <- glance(ARDL101111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000Germany.dyn <- glance(ARDL111000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100Germany.dyn <- glance(ARDL110100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010Germany.dyn <- glance(ARDL110010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001Germany.dyn <- glance(ARDL110001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100Germany.dyn <- glance(ARDL111100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010Germany.dyn <- glance(ARDL111010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001Germany.dyn <- glance(ARDL111001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110Germany.dyn <- glance(ARDL110110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101Germany.dyn <- glance(ARDL110101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011Germany.dyn <- glance(ARDL110011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110Germany.dyn <- glance(ARDL111110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011Germany.dyn <- glance(ARDL111011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111Germany.dyn <- glance(ARDL111111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000Germany.dyn <- 
+  glance(ARDL101000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100Germany.dyn <- 
+  glance(ARDL100100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010Germany.dyn <- 
+  glance(ARDL100010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001Germany.dyn <- 
+  glance(ARDL100001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100Germany.dyn <- 
+  glance(ARDL101100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010Germany.dyn <- 
+  glance(ARDL101010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001Germany.dyn <- 
+  glance(ARDL101001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110Germany.dyn <- 
+  glance(ARDL100110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101Germany.dyn <- 
+  glance(ARDL100101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011Germany.dyn <- 
+  glance(ARDL100011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110Germany.dyn <- 
+  glance(ARDL101110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011Germany.dyn <- 
+  glance(ARDL101011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111Germany.dyn <- 
+  glance(ARDL100111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111Germany.dyn <- 
+  glance(ARDL101111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000Germany.dyn <- 
+  glance(ARDL111000Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100Germany.dyn <- 
+  glance(ARDL110100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010Germany.dyn <- 
+  glance(ARDL110010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001Germany.dyn <- 
+  glance(ARDL110001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100Germany.dyn <- 
+  glance(ARDL111100Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010Germany.dyn <- 
+  glance(ARDL111010Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001Germany.dyn <- 
+  glance(ARDL111001Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110Germany.dyn <- 
+  glance(ARDL110110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101Germany.dyn <- 
+  glance(ARDL110101Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011Germany.dyn <- 
+  glance(ARDL110011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110Germany.dyn <- 
+  glance(ARDL111110Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011Germany.dyn <- 
+  glance(ARDL111011Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111Germany.dyn <- 
+  glance(ARDL111111Germany.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_Germany <- rbind(as.numeric(glARDL101000Germany.dyn), 
@@ -1067,38 +1525,66 @@ tabl_Germany <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_Germany) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_Germany %>%
-  kbl(caption="Goodness-of-fit statistics for `Germany` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `Germany` models",
+      longtable=T) %>%
   kable_styling() %>%
   row_spec(5, background = "yellow")
 
 # Italy
-glARDL101000Italy.dyn <- glance(ARDL101000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100Italy.dyn <- glance(ARDL100100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010Italy.dyn <- glance(ARDL100010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001Italy.dyn <- glance(ARDL100001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100Italy.dyn <- glance(ARDL101100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010Italy.dyn <- glance(ARDL101010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001Italy.dyn <- glance(ARDL101001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110Italy.dyn <- glance(ARDL100110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101Italy.dyn <- glance(ARDL100101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011Italy.dyn <- glance(ARDL100011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110Italy.dyn <- glance(ARDL101110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011Italy.dyn <- glance(ARDL101011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111Italy.dyn <- glance(ARDL100111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111Italy.dyn <- glance(ARDL101111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000Italy.dyn <- glance(ARDL111000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100Italy.dyn <- glance(ARDL110100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010Italy.dyn <- glance(ARDL110010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001Italy.dyn <- glance(ARDL110001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100Italy.dyn <- glance(ARDL111100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010Italy.dyn <- glance(ARDL111010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001Italy.dyn <- glance(ARDL111001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110Italy.dyn <- glance(ARDL110110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101Italy.dyn <- glance(ARDL110101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011Italy.dyn <- glance(ARDL110011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110Italy.dyn <- glance(ARDL111110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011Italy.dyn <- glance(ARDL111011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111Italy.dyn <- glance(ARDL111111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000Italy.dyn <- 
+  glance(ARDL101000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100Italy.dyn <- 
+  glance(ARDL100100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010Italy.dyn <- 
+  glance(ARDL100010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001Italy.dyn <- 
+  glance(ARDL100001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100Italy.dyn <- 
+  glance(ARDL101100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010Italy.dyn <- 
+  glance(ARDL101010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001Italy.dyn <- 
+  glance(ARDL101001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110Italy.dyn <- 
+  glance(ARDL100110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101Italy.dyn <- 
+  glance(ARDL100101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011Italy.dyn <- 
+  glance(ARDL100011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110Italy.dyn <- 
+  glance(ARDL101110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011Italy.dyn <- 
+  glance(ARDL101011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111Italy.dyn <- 
+  glance(ARDL100111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111Italy.dyn <- 
+  glance(ARDL101111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000Italy.dyn <- 
+  glance(ARDL111000Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100Italy.dyn <- 
+  glance(ARDL110100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010Italy.dyn <- 
+  glance(ARDL110010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001Italy.dyn <- 
+  glance(ARDL110001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100Italy.dyn <- 
+  glance(ARDL111100Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010Italy.dyn <- 
+  glance(ARDL111010Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001Italy.dyn <- 
+  glance(ARDL111001Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110Italy.dyn <- 
+  glance(ARDL110110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101Italy.dyn <- 
+  glance(ARDL110101Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011Italy.dyn <- 
+  glance(ARDL110011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110Italy.dyn <- 
+  glance(ARDL111110Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011Italy.dyn <- 
+  glance(ARDL111011Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111Italy.dyn <- 
+  glance(ARDL111111Italy.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_Italy <- rbind(as.numeric(glARDL101000Italy.dyn), 
@@ -1162,38 +1648,66 @@ tabl_Italy <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_Italy) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_Italy %>%
-  kbl(caption="Goodness-of-fit statistics for `Italy` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `Italy` models",
+      longtable=T) %>%
   kable_styling() %>%
   row_spec(2, background = "yellow")
 
 # Spain
-glARDL101000Spain.dyn <- glance(ARDL101000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100100Spain.dyn <- glance(ARDL100100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100010Spain.dyn <- glance(ARDL100010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100001Spain.dyn <- glance(ARDL100001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101100Spain.dyn <- glance(ARDL101100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101010Spain.dyn <- glance(ARDL101010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101001Spain.dyn <- glance(ARDL101001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100110Spain.dyn <- glance(ARDL100110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100101Spain.dyn <- glance(ARDL100101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100011Spain.dyn <- glance(ARDL100011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101110Spain.dyn <- glance(ARDL101110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101011Spain.dyn <- glance(ARDL101011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL100111Spain.dyn <- glance(ARDL100111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL101111Spain.dyn <- glance(ARDL101111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111000Spain.dyn <- glance(ARDL111000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110100Spain.dyn <- glance(ARDL110100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110010Spain.dyn <- glance(ARDL110010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110001Spain.dyn <- glance(ARDL110001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111100Spain.dyn <- glance(ARDL111100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111010Spain.dyn <- glance(ARDL111010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111001Spain.dyn <- glance(ARDL111001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110110Spain.dyn <- glance(ARDL110110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110101Spain.dyn <- glance(ARDL110101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL110011Spain.dyn <- glance(ARDL110011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111110Spain.dyn <- glance(ARDL111110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111011Spain.dyn <- glance(ARDL111011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
-glARDL111111Spain.dyn <- glance(ARDL111111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101000Spain.dyn <- 
+  glance(ARDL101000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100100Spain.dyn <- 
+  glance(ARDL100100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100010Spain.dyn <- 
+  glance(ARDL100010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100001Spain.dyn <- 
+  glance(ARDL100001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101100Spain.dyn <- 
+  glance(ARDL101100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101010Spain.dyn <- 
+  glance(ARDL101010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101001Spain.dyn <- 
+  glance(ARDL101001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100110Spain.dyn <- 
+  glance(ARDL100110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100101Spain.dyn <- 
+  glance(ARDL100101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100011Spain.dyn <- 
+  glance(ARDL100011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101110Spain.dyn <- 
+  glance(ARDL101110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101011Spain.dyn <- 
+  glance(ARDL101011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL100111Spain.dyn <- 
+  glance(ARDL100111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL101111Spain.dyn <- 
+  glance(ARDL101111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111000Spain.dyn <- 
+  glance(ARDL111000Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110100Spain.dyn <- 
+  glance(ARDL110100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110010Spain.dyn <- 
+  glance(ARDL110010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110001Spain.dyn <- 
+  glance(ARDL110001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111100Spain.dyn <- 
+  glance(ARDL111100Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111010Spain.dyn <- 
+  glance(ARDL111010Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111001Spain.dyn <- 
+  glance(ARDL111001Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110110Spain.dyn <- 
+  glance(ARDL110110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110101Spain.dyn <- 
+  glance(ARDL110101Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL110011Spain.dyn <- 
+  glance(ARDL110011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111110Spain.dyn <- 
+  glance(ARDL111110Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111011Spain.dyn <- 
+  glance(ARDL111011Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
+glARDL111111Spain.dyn <- 
+  glance(ARDL111111Spain.dyn)[c("r.squared", "statistic", "AIC", "BIC")]
 
 
 tabl_Spain <- rbind(as.numeric(glARDL101000Spain.dyn), 
@@ -1257,11 +1771,16 @@ tabl_Spain <- cbind(c("ARDL(1,0;1,0,0,0)",
 colnames(tabl_Spain) <- c("Model","R squared", "Test statistic", "AIC", "BIC")
 
 tabl_Spain %>%
-  kbl(caption="Goodness-of-fit statistics for `Spain` models") %>%
+  kbl(caption="Goodness-of-fit statistics for `Spain` models",
+      longtable=T) %>%
   kable_styling() %>%
   row_spec(8, background = "yellow")
 
 ```
+
+` `   
+` ` 
+` `
 
 ## Code
 ```{r, ref.label=knitr::all_labels(appendix == TRUE),echo=TRUE,eval=FALSE}
